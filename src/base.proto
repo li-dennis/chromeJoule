@@ -1,0 +1,876 @@
+//*****************************************************************************
+// Stream message
+//*****************************************************************************
+
+// Every message sent across the channel MUST be a stream message. This is
+// because the protocol buffer does not include top level type information
+// so the message receiver can only assume that it is being given a stream
+// message.
+
+syntax = "proto2";
+
+message StreamMessage {
+  required fixed32 handle = 1;
+  optional bool end = 4;
+
+  required bytes senderAddress = 5;
+  required bytes recipientAddress = 6;
+
+  oneof contents {
+    // TODO - improved error handling
+
+    // Basic Operations
+    Noop noop = 14; // sometimes nothing is enough!
+    UnhandledMessageReply unhandledMessageReply = 15;
+    ConnectionReadyReply connectionReadyReply = 16;
+    RecipientUnavailableReply recipientUnavailableReply = 17;
+    Ping ping = 18;
+    Pong pong = 19;
+
+    ListStreamsRequest listStreamsRequest = 20;
+    ListStreamsReply listStreamsReply = 21;
+
+    ListOperationsRequest listOperationsRequest = 30;
+    ListOperationsReply listOperationsReply = 31;
+
+    // Circulator control
+    StartProgramRequest startProgramRequest = 50;
+    StartProgramReply startProgramReply = 51;
+
+    StopCirculatorRequest stopCirculatorRequest = 60;
+    StopCirculatorReply stopCirculatorReply = 61;
+
+    DropFoodRequest dropFoodRequest = 102;
+    DropFoodReply dropFoodReply = 103;
+
+    // Live feeds
+    BeginLiveFeed beginLiveFeed = 70;
+    BeginLiveFeedReply beginLiveFeedReply = 71;
+
+    KeepAlive keepAlive = 72;
+
+    RetransmitFeedRequest retransmitFeedRequest = 80;
+    RetransmitFeedReply retransmitFeedReply = 81;
+
+    CirculatorDataPoint circulatorDataPoint = 90;
+    DebugMessage debugMessage = 91;
+
+    ListRecentEventsRequest listRecentEventsRequest = 92;
+    ListRecentEventsReply listRecentEventsReply = 93;
+
+    DescribeFeedRequest describeFeedRequest = 95;
+    DescribeFeedReply describeFeedReply = 96;
+
+    ListFeedsRequest listFeedsRequest = 100;
+    ListFeedsReply listFeedsReply = 101;
+
+    ClearErrorRequest clearErrorRequest = 104;
+    ClearErrorReply clearErrorReply = 105;
+
+    // Circulator WiFi
+    ListWifiRequest listWifiRequest = 41;
+    ListWifiReply listWifiReply = 42;
+
+    ConnectWifiRequest connectWifiRequest = 43;
+    ConnectWifiReply connectWifiReply = 44;
+
+    ListWifiProfileRequest listWifiProfileRequest = 45;
+    ListWifiProfileReply listWifiProfileReply = 47;
+
+    ForgetWifiProfileRequest forgetWifiProfileRequest = 48;
+    ForgetWifiProfileReply forgetWifiProfileReply = 49;
+
+    DisconnectWifiRequest disconnectWifiRequest = 160;
+    DisconnectWifiReply disconnectWifiReply = 161;
+
+    // OTA update
+    EnterBootModeRequest enterBootModeRequest =  110;
+    EnterBootModeReply enterBootModeReply =  111;
+
+    StartFileTransferRequest startFileTransferRequest = 112;
+    StartFileTransferReply startFileTransferReply = 113;
+    TransferFileBlockRequest transferFileBlockRequest = 114;
+    TransferFileBlockReply transferFileBlockReply = 115;
+    TransferFileComplete transferFileComplete = 116;
+
+    StartFileReceiveRequest startFileReceiveRequest = 117;
+    StartFileReceiveReply startFileReceiveReply = 118;
+
+    // Initial Key Exchange and authentication
+    StartKeyExchangeRequest startKeyExchangeRequest = 120;
+    StartKeyExchangeReply startKeyExchangeReply = 121;
+
+    CancelKeyExchangeRequest cancelKeyExchangeRequest = 125;
+    CancelKeyExchangeReply cancelKeyExchangeReply = 126;
+
+    SubmitKeyRequest submitKeyRequest = 130;
+    SubmitKeyReply submitKeyReply = 131;
+
+    SubmitBearerAuthTokenRequest submitBearerAuthTokenRequest = 132;
+    SubmitBearerAuthTokenReply submitBearerAuthTokenReply = 133;
+
+    // Predictive cook
+    PredictionUpdate predictionUpdate = 140;
+
+    RenameCirculatorRequest renameCirculatorRequest = 150;
+    RenameCirculatorReply renameCirculatorReply = 151;
+
+    // Circulator Identification Messages
+    IdentifyCirculatorRequest identifyCirculatorRequest = 152;
+    IdentifyCirculatorReply identifyCirculatorReply = 153;
+
+    SetMessagingAddressRequest setMessagingAddressRequest = 154;
+    SetMessagingAddressReply setMessagingAddressReply = 155;
+
+    DisplayLedRequest displayLedRequest = 156;
+    DisplayLedReply displayLedReply = 157;
+
+    // ESP Wifi Module DFU management
+    WifiDFUStatusRequest wifiDFUStatusRequest = 170;
+    WifiDFUStatusReply wifiDFUStatusReply = 171;
+    WifiDFUSetFirmware wifiDFUSetFirmware = 172;
+    WifiDFUDownloadTFTPRequest wifiDFUDownloadTFTPRequest= 173;
+    WifiDFUDownloadTFTPResponse wifiDFUDownloadTFTPResponse = 174;
+
+    // Limits
+    GetLimitsRequest getLimitsRequest = 180;
+    GetLimitsReply getLimitsReply = 181;
+
+    // For debug and testing and end use
+    FactoryResetRequest factoryResetRequest = 1000;
+    FactoryResetReply factoryResetReply = 1001;
+    DeviceRestartRequest deviceRestartRequest = 1002;
+    DeviceRestartReply deviceRestartReply = 1003;
+    TestResetRequest testResetRequest = 1004;
+    TestResetReply testResetReply = 1005;
+    ForgetDevicePairingRequest forgetDevicePairingRequest = 1006;
+    ForgetDevicePairingReply forgetDevicePairingReply = 1007;
+    SetSimulatorRequest setSimulatorRequest = 1008;
+    SetSimulatorReply setSimulatorReply = 1009;
+    GetSimulatorRequest getSimulatorRequest = 1010;
+    GetSimulatorReply getSimulatorReply = 1011;
+
+    SetHardwareCoeffsRequest setHardwareCoeffsRequest = 1020;
+    SetHardwareCoeffsReply setHardwareCoeffsReply = 1021;
+    GetHardwareCoeffsRequest getHardwareCoeffsRequest = 1022;
+    GetHardwareCoeffsReply getHardwareCoeffsReply = 1023;
+
+    GetUsageDataRequest getUsageDataRequest = 1030;
+    GetUsageDataReply getUsageDataReply = 1031;
+    ResetUsageDataRequest resetUsageDataRequest = 1032;
+    ResetUsageDataReply resetUsageDataReply = 1033;
+  }
+}
+
+//*****************************************************************************
+// Basic operations
+//*****************************************************************************
+message UnhandledMessageReply {}
+message ConnectionReadyReply {}
+
+message RecipientUnavailableReply {
+  required bytes recipientAddress = 1;
+}
+
+message ListStreamsRequest{}
+message ListStreamsReply {
+  // Using bytes to avoid problematic (for NanoPB) circular message references
+  required bytes encodedStreamMessage = 1000;
+}
+
+message ListOperationsRequest {}
+message ListOperationsReply {
+  required string name = 1000;
+}
+
+message IdentifyCirculatorRequest {}
+message IdentifyCirculatorReply {
+  required string name = 1;
+  optional string firmwareVersion = 2;
+  required string hardwareVersion = 3;
+  optional string serialNumber = 4;
+  optional string bleMacAddress = 5;
+  optional string softdeviceVersion = 6;
+  optional string bootloaderVersion = 7;
+  optional string appFirmwareVersion = 8;
+  optional string espFirmwareVersion = 9;
+  optional string certificateVersion = 10;
+  optional string modelNumber = 11;
+  optional uint32 apiVersion = 12;
+  optional uint32 hardwareOptions = 13;
+  optional uint32 buildDate = 14;
+}
+
+message RenameCirculatorRequest {
+  required string name = 1;
+}
+message RenameCirculatorReply {
+  optional Result result = 1;
+  required string name = 2;
+}
+
+message SetMessagingAddressRequest {
+  required bytes address = 1;
+}
+message SetMessagingAddressReply {
+  optional Result result = 1;
+}
+
+message DisplayLedRequest {
+  required LedColor ledColor = 1;
+  required LedPattern ledPattern = 2;
+  required uint32 durationMilliseconds = 3;
+}
+message DisplayLedReply {
+  required Result result = 1;
+}
+
+message Noop {}
+
+message Ping {}
+message Pong {}
+message KeepAlive {}
+
+//*****************************************************************************
+// Common types
+//*****************************************************************************
+
+// Must be kept up to date with cs_error.h
+enum Result {
+    CS_SUCCESS = 0;                             ///< Successful command
+    CS_ERROR_SVC_HANDLER_MISSING = 1;           ///< SVC handler is missing
+    CS_ERROR_SOFTDEVICE_NOT_ENABLED = 2;        ///< SoftDevice has not been enabled
+    CS_ERROR_INTERNAL = 3;                      ///< Internal Error
+    CS_ERROR_NO_MEM = 4;                        ///< No Memory for operation
+    CS_ERROR_NOT_FOUND = 5;                     ///< Not found
+    CS_ERROR_NOT_SUPPORTED = 6;                 ///< Not supported
+    CS_ERROR_INVALID_PARAM = 7;                 ///< Invalid Parameter
+    CS_ERROR_INVALID_STATE = 8;                 ///< Invalid state, operation disallowed in this state
+    CS_ERROR_INVALID_LENGTH = 9;                ///< Invalid Length
+    CS_ERROR_INVALID_FLAGS = 10;                ///< Invalid Flags
+    CS_ERROR_INVALID_DATA = 11;                 ///< Invalid Data
+    CS_ERROR_DATA_SIZE = 12;                    ///< Data size exceeds limit
+    CS_ERROR_TIMEOUT = 13;                      ///< Operation timed out
+    CS_ERROR_NULL = 14;                         ///< Null Pointer
+    CS_ERROR_FORBIDDEN = 15;                    ///< Forbidden Operation
+    CS_ERROR_INVALID_ADDR = 16;                 ///< Bad Memory Address
+    CS_ERROR_BUSY = 17;                         ///< Busy
+    CS_ERROR_IO_FAILED = 18;
+    CS_ERROR_ALREADY_EXISTS = 19;
+    CS_ERROR_END_OF_FILE = 20;
+    CS_ERROR_NOT_CONNECTED = 21;                ///< Circulator is not connected
+    CS_ERROR_UNKNOWN_RPC_MSG = 22;              ///< RPC message not recognized
+    CS_ERROR_WIFI_DUPLICATE_SCAN_RESULT = 23;   ///< Duplicate AP scan result
+    CS_ERROR_WIFI_KEY_ERROR = 24;               ///< WiFi key is incorrect
+    CS_ERROR_WIFI_INVALID_ROLE = 25;            ///< WiFi operation requested is not supported for current role
+    CS_ERROR_WIFI_INVALID_SEC_TYPE = 26;        ///< WiFi security mode is not correct for network
+    CS_ERROR_WIFI_INVALID_WEP_IND = 27;         ///< WiFi WEP key index is invalid
+    CS_ERROR_WIFI_ALREADY_DISCONN = 28;         ///< WiFi already disconnected
+    CS_ERROR_WIFI_NOT_CONN = 29;                ///< WiFi not connected
+    CS_ERROR_WIFI_DISCONNECT = 30;              ///< Unexpected disconnection
+    CS_ERROR_WIFI_INVALID_PWD = 31;	        ///< WiFi password incorrect
+    CS_ERROR_WIFI_RX_BUFF = 32;                 ///< WiFi Rx buffer overrun
+    CS_ERROR_WIFI_AP_TERM_CONN = 33;	        ///< AP terminated connection
+    CS_ERROR_INVALID_SOCKET = 34;               ///< Unable to open a valid BSD socket
+    CS_ERROR_IO_IN_PROGRESS = 35;               ///< Async I/O incomplete -- try again
+    CS_ERROR_GEN_SOCK_FAILURE = 36;	        ///< General socket failure
+}
+
+message CirculatorProgram {
+  required float setPoint = 1;
+  optional uint32 cookTime = 2;
+
+  optional uint32 delayedStart = 3;
+  optional float holdingTemperature = 4;
+
+  required ProgramType programType = 5;
+  optional ProgramMetadata programMetadata = 6;
+}
+
+enum ProgramType {
+  MANUAL = 0;
+  AUTOMATIC = 1;
+}
+
+enum ProgramStep {
+  UNKNOWN = 0; // When would the step be unknown?
+  PRE_HEAT = 1;
+  WAIT_FOR_FOOD = 2;
+  COOK = 3;
+  WAIT_FOR_REMOVE_FOOD = 4;
+  ERROR  = 5;
+}
+
+message ProgramMetadata {
+  optional string guideId = 1;
+  optional string programId = 2;
+  optional string timerId = 3;
+  optional string cookId = 4;
+}
+
+enum ErrorState {
+  NO_ERROR = 0;
+  SOFT_ERROR = 1;
+  HARD_ERROR = 2;
+}
+
+// This MUST match the firmware's ordering in cs_led.h
+enum LedColor {
+  LED_COLOR_RED = 0;
+  LED_COLOR_GREEN = 1;
+  LED_COLOR_BLUE = 2;
+  LED_COLOR_WHITE = 3;
+  LED_COLOR_ORANGE = 4;
+  LED_COLOR_YELLOW = 5;
+  LED_COLOR_BLACK = 6;
+  LED_COLOR_PURPLE = 7;
+}
+
+// This MUST match the firmware's ordering in cs_led.h
+enum LedPattern {
+  LED_PATTERN_BLINK = 0;
+  LED_PATTERN_BREATHE = 1;
+  LED_PATTERN_DOUBLE_BLINK = 2;
+  LED_PATTERN_DOUBLE_PULSE = 3;
+  LED_PATTERN_SOLID = 4;
+}
+
+//*****************************************************************************
+// Circulator operation
+//*****************************************************************************
+
+message StartProgramRequest {
+  required CirculatorProgram circulatorProgram = 1;
+  // Optional optimistic concurrency parameters
+  optional uint32 feedId = 2;
+  optional uint32 sequenceNumber = 3;
+}
+message StartProgramReply {
+  optional Result result = 1;
+}
+
+message StopCirculatorRequest {
+  // Optional optimistic concurrency parameters
+  optional uint32 feedId = 2;
+  optional uint32 sequenceNumber = 3;
+  // Question: should the client or the server specify for how long a request is valid?
+}
+message StopCirculatorReply {
+  optional Result result = 1;
+}
+
+message DropFoodRequest {}
+message DropFoodReply {
+  optional Result result = 1;
+}
+
+
+//*****************************************************************************
+// Circulator operation
+//*****************************************************************************
+
+enum EventType {
+ NO_EVENT = 0; // This means no event
+ HW_FAILURE = 1; // This means hardware failure and the unit needs to be replaced
+ STOP_PROGRAM = 2; // This means program was stopped due to an error or an event
+}
+
+enum EventReason {
+ NO_REASON = 0; // No reason, only return with NO_EVENT EventType
+ HARDWARE_FAILURE = 1; // This is deprecated and no longer being used
+ BUTTON_PRESSED = 2; // STOP_PROGRAM
+ LOW_WATER_LEVEL = 3; // STOP_PROGRAM
+ TIPPED_OVER = 4; // STOP_PROGRAM
+ OVERHEATING = 5; // STOP_PROGRAM
+ POWER_LOSS = 6; // STOP_PROGRAM
+ HEATER_THERMISTOR = 7; // HW_FAILURE
+ BATH_THERMISTOR = 8; // HW_FAILURE
+ PRESSURE_SENSOR = 9; // HW_FAILURE
+ ACCELEROMETER = 10; // HW_FAILURE
+ BAD_MOTOR = 11; // HW_FAILURE
+ STUCK_MOTOR = 12; // STOP_PROGRAM
+ BAD_HEATER = 13; // HW_FAILURE
+}
+
+message ListRecentEventsRequest {}
+
+message ListRecentEventsReply {
+  // Note - once we start sending more than a single reply we should include  an
+  // index and a count
+  required EventType eventType = 1;
+  required EventReason eventReason = 2;
+  required uint32 eventTimestamp = 3;
+  // If eventType is HW_FAILURE, this value would be milliseconds since processor start up as which the event occurred
+  // If eventType is STOP_PROGRAM, this value would be milliseconds since last startProgramRequest
+  // If eventType is UNKNOWN_REASON, this value would be 0
+  optional uint32 feedId = 4; // MAKE THIS REQUIRED AFTER EVERYONE UPDATES
+  optional uint32 sequenceNumber = 5; // MAKE THIS REQUIRED AFTER EVERYONE UPDATES
+}
+
+message ClearErrorRequest {}
+
+message ClearErrorReply {
+  required Result result = 1;
+}
+
+//*****************************************************************************
+// WiFi
+//*****************************************************************************
+
+// TODO - need a request for describing current state
+enum SecurityType { // embedded enum makes embedded c library unhappy
+  OPEN = 0;
+  WEP = 1;
+  WPA = 2;
+  WPS = 3;
+  UNKNOWN_WIFI = 4;
+  WPA2 = 5;
+  WPA_WPA2 = 6;
+}
+message ListWifiRequest {
+  optional bool start = 1;
+}
+message ListWifiReply {
+  required string SSID = 1000;
+  required SecurityType securityType = 1001;
+  required sint32 rssi = 1002;
+}
+
+message ConnectWifiRequest {
+  required string SSID = 1 ;
+  required string passphrase = 2 ;
+  required SecurityType securityType = 3;
+}
+message ConnectWifiReply {
+  optional Result result = 1;
+}
+
+enum WifiConnectionStatus {
+    WIFI_IDLE = 0;
+    WIFI_CONNECTING = 1;
+    WIFI_WRONG_PASSWORD = 2;
+    WIFI_NO_AP_FOUND = 3;
+    WIFI_CONNECT_FAIL = 4;
+    WIFI_GOT_IP = 5;
+}
+message ListWifiProfileRequest {}
+message ListWifiProfileReply {
+  required Result result = 1;
+  required string SSID = 2;
+  optional bool bearerTokenSet = 3;
+  optional WifiConnectionStatus connectionStatus = 4;
+  optional uint32 timeSinceLastPacketMS = 5;
+  optional uint32 cloudStatus = 6;
+  optional bytes MACADDR = 7;
+}
+
+message ForgetWifiProfileRequest {}
+message ForgetWifiProfileReply {
+  optional Result result = 1;
+}
+
+message DisconnectWifiRequest {}
+message DisconnectWifiReply {
+  optional Result result = 1;
+}
+
+//*****************************************************************************
+// WiFi DFU Control Messages
+//*****************************************************************************
+
+message WifiDFUStatusRequest {
+};
+
+message WifiDFUSlotStatus {
+  required bool  valid = 1;
+  optional bytes sha256 = 2;
+}
+
+message WifiDFUStatusReply {
+  required Result result = 1;
+  required uint32 running_slot = 2;
+  /* Exactly 3 slots will be returned */
+  repeated WifiDFUSlotStatus slot = 3;
+};
+
+// WifiDFUSetFirmware has no matching response command,
+// but after sending it the client can expect a WifiDFUStatusReply
+// (however the rpc_Handle may not match, if a reset has happened in between.)
+message WifiDFUSetFirmware {
+  required bytes sha256 = 1;
+}
+
+message WifiDFUDownloadTFTPRequest {
+  required string host = 1;
+  required string filename = 2;
+  required bytes sha256 = 3;
+  optional bool useHTTP = 4;
+}
+
+enum WifiDFUDownloadTFTPStatus { // embedding enum in message makes embedded c library unhappy
+  API_ERROR = -32; // API errors range from -1 to -32. Code will need to be inspected to determine what happened
+  FAILED = 0;  // General error
+  SUCCESS = 1;
+  ONGOING = 2; // Transfer is currently in progress
+
+  // Specific errors
+  FAILED_TIMEOUT = 3; // Transfer was timed out because data was not received in time
+  FAILED_ROUTING = 4; // No route is available to reach the server
+  FAILED_SHASUM = 5; // The sha256 supplied does not match the sha256 of the downloaded image
+  FAILED_SLOT_ACTIVE = 6; // Trying to save the requested image into the currently active memory slot
+  FAILED_SLOT_FACTORY = 7; // Trying to save the requested image over the factory image
+  FAILED_SLOT_INVALID = 8; // Specified slot is out of range
+  FAILED_BAD_IMAGE = 9; // Image is not a valid ESP executable
+  FAILED_BAD_ADDRESS = 10; // Trying to save the requested image into invalid memory
+}
+
+message WifiDFUDownloadTFTPResponse {
+  required WifiDFUDownloadTFTPStatus status = 1;
+  optional uint32 bytes_read = 2;
+}
+
+//*****************************************************************************
+// Time series data
+//*****************************************************************************
+
+message DescribeFeedRequest {
+  required uint32 feedId = 1;
+}
+
+message DescribeFeedReply {
+  required uint32 feedId = 1;
+  optional CirculatorProgram circulatorProgram = 2;
+  optional Result result = 3;
+}
+
+message ListFeedsRequest {}
+message ListFeedsReply {
+  required uint32 feedId = 1;
+  required FeedType feedType = 2;
+  optional bool active = 3;
+  optional Result result = 4;
+}
+
+enum FeedType {
+  COOK_DATA = 1;
+  DEBUG = 2;
+  NETWORK_BLUETOOTH = 3;
+  NETWORK_WIFI = 4;
+}
+
+message BeginLiveFeed {
+  required FeedType feedType = 1;
+}
+
+message BeginLiveFeedReply {
+  optional Result result = 1;
+}
+
+message BeginLiveFeedError {
+  enum LiveFeedErrorType {
+    NO_ACTIVE_FEED = 1;
+  }
+}
+
+message CirculatorDataPoint {
+  required uint32 feedId = 1;
+  required uint32 sequenceNumber = 2;
+  required uint32 timestamp = 3;
+  // timestamp is milliseconds since processor start up
+  optional ErrorState errorState = 4;
+  // Question: do we also need milliseconds since last message too?
+
+  required float bathTemp = 10;
+  optional ProgramStep programStep = 11;
+  optional uint32 timeRemaining = 12;
+
+  // Additional Data from the Circulator
+  optional float heaterTemp = 50; // Heater temperature (Celsius)
+  // optional float auxTemp = 51; // Auxiliary temperature sensor (Celsius) Removed because not used
+  optional float upperBoardTemp = 52; // Temperature in the upper (cool) section of the board (Celsius)
+  optional float lowerBoardTemp = 53; // Temperature in lower (hot) section of the board (Celsius)
+  optional int32 motorRPM = 54; // Motor RPM (Positive numbers spin water up from the bottom, Negative through the outlet and out the bottom)
+  optional float heaterPWM = 55; // Heater PWM [Pulse Width Modulation] (On Percentage)
+  optional float motorVoltage = 56; // Motor voltage (Volts)
+  optional float motorPWM = 57; // Motor PWM [Pulse Width Modulation] (On Percentage)
+  optional float motorCurrent = 58; // Motor current draw (Amps)
+  // optional float nrfTemp = 59; // Bluetooth processor temperature (Celsius) Removed because not used
+  // optional float measuredBathTemp = 60; // Bath temperature before filter (Celsius) Removed because not used
+  optional float pressure = 61; // Joule pressure (hPa/mbar)
+  // optional float pressureTemp = 62; // Joule pressure temperature (Celsius) Removed because not used
+  optional uint32 motorFaultFlag = 63; // Fault flag from the motor controller
+  optional float motorPeakCurrent = 64; // Peak motor current draw (Amps)
+}
+
+enum LogLevel {
+  LOG_DEBUG = 0;
+  LOG_INFO = 1;
+  LOG_WARNING = 2;
+  LOG_ERROR = 3;
+  LOG_FATAL = 4;
+}
+
+message DebugMessage {
+  required uint32 feedId = 1;
+  required uint32 sequenceNumber = 2;
+  required uint32 timestamp = 3;
+  required LogLevel logLevel = 4;
+  optional string source = 5;
+  optional string event = 6;
+  optional string message = 10;
+}
+
+message RetransmitFeedRequest {
+  required uint32 feedId = 1;
+  required uint32 seqStart = 2;
+  required uint32 seqEnd = 3;
+}
+
+message RetransmitFeedReply {
+  optional Result result = 1;
+}
+
+// Ignore below, to be revised but currently used in tests
+message StreamFeedReply {
+  required uint32 feedId = 1;
+  required uint32 seq = 2;
+  optional float setPoint = 3;
+  optional float bathTemp = 4;
+}
+
+//*****************************************************************************
+// Firmware Update + File Transfer
+//*****************************************************************************
+
+enum BootModeType {
+  SOFTDEVICE_BOOT_MODE  = 1;
+  BOOTLOADER_BOOT_MODE  = 2;
+  APPLICATION_BOOT_MODE = 3;
+}
+
+message EnterBootModeRequest {
+  optional BootModeType bootModeType = 1;
+}
+
+message EnterBootModeReply {
+  optional Result result = 1;
+}
+
+enum FileType {
+  APPLICATION_FIRMWARE = 1;
+  SOFTDEVICE_FIRMWARE  = 2;
+  WIFI_FIRMWARE        = 3;
+  CERTIFICATE_FIRMWARE = 4;
+  BOOTLOADER_FIRMWARE  = 5;
+}
+
+message StartFileTransferRequest {
+  required FileType fileType = 1;
+  required uint32 blockCount = 2;
+  required uint32 byteCount = 3;
+
+  // Always CRC?  In the future we might also want to include a field
+  // for cryptographically signing the files too.
+  required uint32 checksum = 4;
+  optional string version = 5;
+}
+
+message StartFileTransferReply {
+  required Result result = 1;
+}
+
+message StartFileReceiveRequest {
+  required FileType fileType = 1;
+}
+
+message StartFileReceiveReply {
+  required Result result = 1;
+  required uint32 blockCount = 2;
+  required uint32 byteCount = 3;
+  required uint32 checksum = 4;
+}
+
+message TransferFileBlockRequest {
+  required uint32 blockIdx = 1;
+  required bytes block = 2;
+}
+
+message TransferFileBlockReply {
+  required Result result = 1;
+  required uint32 blockIdx = 2;
+}
+
+message TransferFileComplete {
+  required Result result = 1;
+}
+
+//*****************************************************************************
+// Initial Key Exchange
+//*****************************************************************************
+
+message StartKeyExchangeRequest {}
+message StartKeyExchangeReply {
+  required bytes secretKey = 1;
+  optional Result result = 2;
+}
+
+message CancelKeyExchangeRequest {}
+message CancelKeyExchangeReply {
+  required Result result = 1;
+}
+
+message SubmitKeyRequest {
+  required bytes secretKey = 1;
+}
+message SubmitKeyReply {
+  optional Result result = 1;
+}
+
+//*****************************************************************************
+// Predictive Cook
+//*****************************************************************************
+
+message PredictionUpdate {
+  required ProgramStep programStep = 1;
+  required uint32 finishTimestamp = 2;
+
+  // The last point used for the prediction
+  // Should it be required or optional?
+  optional uint32 feedId = 3;
+  optional uint32 sequenceNumber = 4;
+}
+
+//*****************************************************************************
+// Initial Authorization Token
+//*****************************************************************************
+
+message SubmitBearerAuthTokenRequest {
+  required string token = 1;
+}
+message SubmitBearerAuthTokenReply {
+  optional Result result = 1;
+}
+
+
+//*****************************************************************************
+// Testing / Debug and End Use
+//*****************************************************************************
+message FactoryResetRequest {
+  required bool restart = 1;
+}
+message FactoryResetReply {
+  optional Result result = 1;
+}
+message DeviceRestartRequest {
+}
+message DeviceRestartReply {
+  optional Result result = 1;
+}
+message TestResetRequest {
+}
+message TestResetReply {
+  optional Result result = 1;
+}
+message ForgetDevicePairingRequest {
+}
+message ForgetDevicePairingReply {
+  optional Result result = 1;
+}
+message SetSimulatorRequest {
+  required bool simulatorOn = 1;
+}
+message SetSimulatorReply {
+  optional Result result = 1;
+}
+message GetSimulatorRequest {
+}
+message GetSimulatorReply {
+  required bool simulatorOn = 1;
+}
+
+message SetHardwareCoeffsRequest {
+  required float tempAdcBias = 1;
+  required float tempAdcScale = 2;
+  required float tempRef = 3;
+  required float tempCoeffA = 4;
+  required float tempCoeffB = 5;
+  required float tempCoeffC = 6;
+}
+message SetHardwareCoeffsReply {
+  required Result result = 1;
+}
+
+message GetHardwareCoeffsRequest {}
+message GetHardwareCoeffsReply {
+  required float tempAdcBias = 1;
+  required float tempAdcScale = 2;
+  required float tempRef = 3;
+  required float tempCoeffA = 4;
+  required float tempCoeffB = 5;
+  required float tempCoeffC = 6;
+  required Result result = 7;
+}
+
+enum UsageMetric {
+    MOTOR_RUNNING_MINS_LT = 0;
+    TOTAL_REVOLUTIONS = 1;
+    MOTOR_RUNNING_MINS_LT_30C = 2;
+    MOTOR_RUNNING_MINS_LT_35C = 3;
+    MOTOR_RUNNING_MINS_LT_40C = 4;
+    MOTOR_RUNNING_MINS_LT_45C = 5;
+    MOTOR_RUNNING_MINS_LT_50C = 6;
+    MOTOR_RUNNING_MINS_LT_55C = 7;
+    MOTOR_RUNNING_MINS_LT_60C = 8;
+    MOTOR_RUNNING_MINS_LT_65C = 9;
+    MOTOR_RUNNING_MINS_LT_70C = 10;
+    MOTOR_RUNNING_MINS_LT_75C = 11;
+    MOTOR_RUNNING_MINS_LT_80C = 12;
+    MOTOR_RUNNING_MINS_LT_85C = 13;
+    MOTOR_RUNNING_MINS_LT_90C = 14;
+    MOTOR_RUNNING_MINS_LT_95C = 15;
+    MOTOR_RUNNING_MINS_GT_95C = 16;
+    MOTOR_RPM_MEAN = 17;
+    MOTOR_RPM_VARIANCE = 18;
+    MOTOR_CURRENT_MEAN = 19;
+    MOTOR_CURRENT_VARIANCE = 20;
+    HEATER_MEAN = 21;
+    HEATER_VARIANCE = 22;
+    PRESSURE_MEAN = 23;
+    PRESSURE_VARIANCE = 24;
+    BATH_TEMP_MEAN = 25;
+    BATH_TEMP_VARIANCE = 26;
+    NUM_BUTTON_PRESSES = 27;
+    NUM_COOKS_INTERRUPTED = 28;
+    NUM_OOW_ERRORS = 29;
+    NUM_OVERTEMP_ERRORS = 30;
+    NUM_MOTOR_OVER_CURRENT_ERRORS = 31;
+    NUM_ACCELEROMETER_TRIPS = 32;
+    NUM_MOTOR_STALLS = 33;
+}
+
+message UsageDataMetric {
+  required UsageMetric key = 1;
+  required MetricValue value = 2;
+}
+
+message MetricValue {
+  optional uint32 intValue = 1;
+  optional float floatValue = 2;
+}
+
+message GetUsageDataRequest {}
+message GetUsageDataReply {
+  required Result result = 1;
+  optional string serialNumber = 2;
+  required UsageDataMetric metric = 3;
+}
+message ResetUsageDataRequest {}
+message ResetUsageDataReply {
+  required Result result = 1;
+}
+
+message GetLimitsRequest {}
+message GetLimitsReply {
+  required Result result = 1;
+  required float maxTemp = 2;
+}
