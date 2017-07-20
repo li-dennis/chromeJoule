@@ -1,54 +1,22 @@
-import * as $ from "jquery"
 import { circulatorConnectionStates, csConfig } from "./constants"
-import { email, password } from "./credentials"
-import * as baseProtobuf from "./protobuf-files/base.js"
-import StreamMessageHandler from "./StreamMessageHandler"
+
+interface CSWebSocketHandlers {
+  openHandler?: (() => any)
+  messageHandler?: ((_: MessageEvent) => any)
+  errorHandler?: ((_: Event) => any)
+  closeHandler?: ((_: CloseEvent) => any)
+}
 
 class CSWebSocket {
   private socket: WebSocket = null
-  private reconnectInterval: Number = null
-  private headers: any = { "Content-Type": "application/x-www-form-urlencoded" }
-  private streamMessageHandler = new StreamMessageHandler()
+  private handlers: CSWebSocketHandlers
 
-  async getAuthToken() {
-    const url = `${csConfig.production.chefstepsEndpoint}/api/v0/authenticate?user[email]=${email}&user[password]=${password}`
-
-    return $.ajax({
-      url,
-      type: "POST",
-      headers: this.headers,
-    }).then((response) => {
-      return response.token
-    })
-  }
-
-  async getCirculatorToken(authorization) {
-    const baseUrl = `${csConfig.production.chefstepsEndpoint}/api/v0/circulators`
-    const headers = Object.assign({ authorization }, this.headers)
-    return $.ajax({
-      url: baseUrl,
-      type: "GET",
-      headers,
-    })
-    .then((response) => response && response[0].circulatorId)
-    .then((circulatorId) => {
-      const url = `${baseUrl}/${circulatorId}/token`
-      return $.ajax({
-        url,
-        type: "GET",
-        headers,
-      })
-    }).then((response) => {
-      return response.token
-    })
+  constructor(handlers: CSWebSocketHandlers) {
+    this.handlers = handlers
   }
 
   // see StreamMessageHandler in bundle.js:44245
-  public async connect() {
-    const authToken: string = await this.getAuthToken()
-    const authorization = `Bearer ${authToken}`
-    const circulatorToken = await this.getCirculatorToken(authorization)
-
+  public async init(circulatorToken) {
     return new Promise((resolve, reject) => {
       const url = `${csConfig.production.webSocketEndpoint}?token=${circulatorToken}`
       this.socket = new WebSocket(url)
@@ -56,19 +24,23 @@ class CSWebSocket {
 
       this.socket.onopen = () => {
         console.log("Websocket opened")
+        this.handlers.openHandler && this.handlers.openHandler()
         resolve()
       }
 
-      this.socket.onmessage = (message: any) => {
-        console.log("Received on websocket: " + StreamMessageHandler.decode(message.data))
+      this.socket.onmessage = (messageEvent: MessageEvent) => {
+        console.log("Received on websocket: " + messageEvent)
+        this.handlers.messageHandler && this.handlers.messageHandler(messageEvent)
       }
 
-      this.socket.onerror = (error: any) => {
+      this.socket.onerror = (error: Event) => {
         console.log("WebSocket error: " + error)
+        this.handlers.errorHandler && this.handlers.errorHandler(error)
         reject(error)
       }
 
-      this.socket.onclose = (event: Event) => {
+      this.socket.onclose = (event: CloseEvent) => {
+        this.handlers.closeHandler && this.handlers.closeHandler(event)
         console.log("Websocket socket closed: " + JSON.stringify(event))
       }
     })

@@ -1,4 +1,4 @@
-import CSWebSocket from "./CSWebSocket"
+import StreamMessageHandler from "./StreamMessageHandler"
 
 // see bundle.js:43895
 // const hexToByteAddress = (hexAddress) => {
@@ -11,6 +11,6 @@ import CSWebSocket from "./CSWebSocket"
 
 //   return hexToBytes(hexAddress);
 // }
-const webSocketConnection = new CSWebSocket()
+const streamMessageHandler = new StreamMessageHandler()
 
-webSocketConnection.connect()
+streamMessageHandler.init()
