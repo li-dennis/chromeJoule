@@ -3,7 +3,21 @@ import { load } from "protobufjs"
 import * as api from "./api"
 import { circulatorConnectionStates, csConfig } from "./constants"
 import { email, password } from "./credentials"
+import * as baseProtobuf from "./protobuf-files/base.js"
 import * as utils from "./utils"
+
+// see bundle.js:43895
+const hexToByteAddress = (hexAddress) => {
+  if (hexAddress.length % 2 !== 0) {
+    throw new Error("Not a valid address, must be multiple of 2: " + hexAddress);
+  }
+  if (hexAddress.length > 18) {
+    throw new Error("Address is too long: " + hexAddress);
+  }
+
+  return hexToBytes(hexAddress);
+};
+
 
 class CSWebSocket {
   private socket: WebSocket = null
@@ -29,9 +43,9 @@ class CSWebSocket {
       url: baseUrl,
       type: "GET",
       headers,
-    }).then((response) => {
-      return response && response[0].circulatorId
-    }).then((circulatorId) => {
+    })
+    .then((response) => response && response[0].circulatorId)
+    .then((circulatorId) => {
       const url = `${baseUrl}/${circulatorId}/token`
       return $.ajax({
         url,
@@ -43,6 +57,7 @@ class CSWebSocket {
     })
   }
 
+  // see StreamMessageHandler in bundle.js:44245
   public async connect() {
     const authToken: string = await this.getAuthToken()
     const authorization = `Bearer ${authToken}`
@@ -53,14 +68,16 @@ class CSWebSocket {
       this.socket = new WebSocket(url)
       this.socket.binaryType = "arraybuffer"
 
-      // see bundle.js:44130 for where StreamHandler starts.
       this.socket.onopen = () => {
         console.log("Websocket opened")
         resolve()
       }
 
       this.socket.onmessage = (message: any) => {
-        console.log("Received on websocket: " + message)
+        const data = message.data
+        const streamMessage = baseProtobuf.StreamMessage.decode(new Uint8Array(data))
+        console.log("Received on websocket: " + streamMessage)
+        // Assume streamMessage is of type connectionReadyReply
       }
 
       this.socket.onerror = (error: any) => {
@@ -79,6 +96,7 @@ class CSWebSocket {
   }
 }
 
+// see bundle.js:44130 for where StreamHandler starts.
 // class RPCConnection {
 //   protected rpcStream: RpcStream
 //   protected socketConnection: WebSocketConnection

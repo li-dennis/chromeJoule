@@ -6,6 +6,6 @@
     "sourceMap": true,
     "rootDir": "src",
     "outDir": "dist/js",
-    "noEmitOnError": true
+    "allowJs": true
   }
 }

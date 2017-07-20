@@ -1,7 +1,138 @@
-// Generated via https://github.com/dcodeIO/protobuf.js#pbts-for-typescript
-// $ pbjs -t static-module base.proto -o base.js
-// $ pbts -o base.d.ts base.js
 import * as $protobuf from "protobufjs";
+
+/** SystemActor enum. */
+export enum SystemActor {
+    COOKING_APP = 1,
+    CIRCULATOR = 2,
+    SERVICE = 3,
+    PREDICTIVE_COOKING = 4
+}
+
+/** Properties of a RemoteMessage. */
+export interface IRemoteMessage {
+
+    /** RemoteMessage handle */
+    handle?: number;
+
+    /** RemoteMessage end */
+    end?: boolean;
+
+    /** RemoteMessage senderType */
+    senderType: SystemActor;
+
+    /** RemoteMessage senderId */
+    senderId: number;
+
+    /** RemoteMessage receiverType */
+    receiverType: SystemActor;
+
+    /** RemoteMessage receiverId */
+    receiverId: number;
+
+    /** RemoteMessage encodedStreamMessage */
+    encodedStreamMessage: Uint8Array;
+}
+
+/** Represents a RemoteMessage. */
+export class RemoteMessage {
+
+    /**
+     * Constructs a new RemoteMessage.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IRemoteMessage);
+
+    /** RemoteMessage handle. */
+    public handle: number;
+
+    /** RemoteMessage end. */
+    public end: boolean;
+
+    /** RemoteMessage senderType. */
+    public senderType: SystemActor;
+
+    /** RemoteMessage senderId. */
+    public senderId: number;
+
+    /** RemoteMessage receiverType. */
+    public receiverType: SystemActor;
+
+    /** RemoteMessage receiverId. */
+    public receiverId: number;
+
+    /** RemoteMessage encodedStreamMessage. */
+    public encodedStreamMessage: Uint8Array;
+
+    /**
+     * Creates a new RemoteMessage instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns RemoteMessage instance
+     */
+    public static create(properties?: IRemoteMessage): RemoteMessage;
+
+    /**
+     * Encodes the specified RemoteMessage message. Does not implicitly {@link RemoteMessage.verify|verify} messages.
+     * @param message RemoteMessage message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IRemoteMessage, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified RemoteMessage message, length delimited. Does not implicitly {@link RemoteMessage.verify|verify} messages.
+     * @param message RemoteMessage message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IRemoteMessage, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a RemoteMessage message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns RemoteMessage
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): RemoteMessage;
+
+    /**
+     * Decodes a RemoteMessage message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns RemoteMessage
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): RemoteMessage;
+
+    /**
+     * Verifies a RemoteMessage message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a RemoteMessage message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns RemoteMessage
+     */
+    public static fromObject(object: { [k: string]: any }): RemoteMessage;
+
+    /**
+     * Creates a plain object from a RemoteMessage message. Also converts values to other types if specified.
+     * @param message RemoteMessage
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: RemoteMessage, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this RemoteMessage to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+}
 
 /** Properties of a StreamMessage. */
 export interface IStreamMessage {
