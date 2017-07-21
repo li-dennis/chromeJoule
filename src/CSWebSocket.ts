@@ -49,6 +49,12 @@ class CSWebSocket {
   public disconnect() {
     this.socket.close()
   }
+
+  public send(buffer: ArrayBuffer) {
+    console.log("Sending ", buffer)
+    console.log(this.socket.readyState)
+    this.socket.send(buffer)
+  }
 }
 
 export default CSWebSocket

@@ -1,12 +1,12 @@
 import { StreamMessage } from "./protobuf-files/base.js"
 
 const StreamMessageUtils = {
-  decode: (data) => {
-    return StreamMessage.decode(new Uint8Array(data))
+  decode: (buffer) => {
+    return StreamMessage.decode(new Uint8Array(buffer))
   },
 
   encode: (streamMessage) => {
-    return streamMessage.encode().toBuffer()
+    return StreamMessage.encode(streamMessage).finish().buffer
   },
 
   getMessageType: (streamMessage) => {
