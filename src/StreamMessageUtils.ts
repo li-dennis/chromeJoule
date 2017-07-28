@@ -16,14 +16,6 @@ const StreamMessageUtils = {
   toHex: (uint8Array) => {
     return Buffer.from(uint8Array).toString("hex")
   },
-
-  getSenderAddress: (streamMessage) => {
-    return this.toHex(streamMessage.senderAddress)
-  },
-
-  getRecipientAddress: (streamMessage) => {
-    return this.toHex(streamMessage.recipientAddress)
-  },
 }
 
 export default StreamMessageUtils

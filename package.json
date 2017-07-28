@@ -13,6 +13,7 @@
     "bytebuffer": "^5.0.1",
     "events": "^1.1.1",
     "glob": "^7.1.2",
+    "jquery": "^3.2.1",
     "protobufjs": "^6.8.0",
     "source-map-loader": "^0.2.1",
     "ts-loader": "^2.3.0",

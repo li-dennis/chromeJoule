@@ -1,18 +1,20 @@
+import * as ByteBuffer from "bytebuffer"
 import * as $ from "jquery"
 import { circulatorConnectionStates, csConfig } from "./constants"
 import { email, password } from "./credentials"
 import CSWebSocket from "./CSWebSocket"
-import { Ping, Pong, StreamMessage } from "./protobuf-files/base.js"
+import HandlePool from "./HandlePool"
+import { IStreamMessage, Ping, Pong, StartKeyExchangeRequest, StreamMessage } from "./protobuf-files/base.js"
 import StreamMessageUtils from "./StreamMessageUtils"
 
-
-// see bundle.js:44130 and :44875
-// TODO: Rename to MasterController or something.
-class StreamMessageHandler {
+class WebSocketsCirculatorManager {
   private headers: any = { "Content-Type": "application/x-www-form-urlencoded" }
   private cSWebSocket: CSWebSocket
   private circulators = []
-  private activeCirculatorToken: string = null
+  private activeCirculator = null
+  private handlePool: HandlePool
+
+  private initMessageProperties: IStreamMessage
 
   constructor() {
     this.cSWebSocket = new CSWebSocket({
@@ -26,9 +28,9 @@ class StreamMessageHandler {
     this.headers = Object.assign({ authorization }, this.headers)
 
     this.circulators = await this.getCirculators()
-    this.activeCirculatorToken = await this.getCirculatorToken()
+    this.activeCirculator = await this.getCirculator()
 
-    this.cSWebSocket.init(this.activeCirculatorToken)
+    this.cSWebSocket.init(authToken)
   }
 
   public sendStreamMessage(streamMessage: StreamMessage) {
@@ -38,10 +40,12 @@ class StreamMessageHandler {
   public receiveSocketMessageEvent = (messageEvent: MessageEvent) => {
     const streamMessage = StreamMessageUtils.decode(messageEvent.data)
     const messageType = StreamMessageUtils.getMessageType(streamMessage)
+
     console.log(`WebSocketConnection is handling ${messageType}`, streamMessage)
     switch (messageType) {
       case "connectionReadyReply":
-        this.sendPing(streamMessage)
+        this.ininiateStream(messageEvent)
+        this.startKeyExchange(streamMessage)
       case "ping":
         break
       case "recipientUnavailableReply":
@@ -52,28 +56,41 @@ class StreamMessageHandler {
     }
   }
 
+  public ininiateStream = (messageEvent: MessageEvent) => {
+    const streamMessage = StreamMessageUtils.decode(messageEvent.data)
+    const messageType = StreamMessageUtils.getMessageType(streamMessage)
+
+    if (!this.initMessageProperties) {
+      this.initMessageProperties = {
+        end: false,
+        handle: (streamMessage.handle += 2) % 256,
+        recipientAddress: streamMessage.senderAddress,
+        senderAddress: streamMessage.recipientAddress,
+      }
+    }
+  }
+
   public sendPong(streamMessage: StreamMessage) {
     const pong = new Pong()
-    const response = new StreamMessage({
-      pong,
-      handle: streamMessage.handle,
-      recipientAddress: streamMessage.senderAddress,
-      senderAddress: streamMessage.recipientAddress,
-    })
+    const props = Object.assign({}, this.initMessageProperties, { pong })
+    const response = new StreamMessage(props)
 
     this.sendStreamMessage(response)
-}
+  }
+
+  public startKeyExchange(connectionReadyReply: StreamMessage) {
+    const startKeyExchangeRequest = new StartKeyExchangeRequest()
+    const request = new StreamMessage(Object.assign({}, this.initMessageProperties, { startKeyExchangeRequest }))
+
+    this.sendStreamMessage(request)
+  }
 
   public sendPing(streamMessage: StreamMessage) {
     const ping = new Ping()
-    const response = new StreamMessage({
-      ping,
-      handle: streamMessage.handle,
-      recipientAddress: streamMessage.senderAddress,
-      senderAddress: streamMessage.recipientAddress,
-    })
+    const props = Object.assign({}, this.initMessageProperties, { ping })
+    const request = new StreamMessage(props)
 
-    this.sendStreamMessage(response)
+    this.sendStreamMessage(request)
 
   }
 
@@ -89,6 +106,11 @@ class StreamMessageHandler {
     })
   }
 
+  protected getCallerAddress(userToken) {
+    const hexAddress = userToken ? JSON.parse(atob(userToken.split(".")[1])).a : "aabbaabbaabbaabb"
+    return ByteBuffer.fromHex(hexAddress)
+  }
+
   protected async getCirculators() {
     const baseUrl = `${csConfig.production.chefstepsEndpoint}/api/v0/circulators`
     return $.ajax({
@@ -99,7 +121,7 @@ class StreamMessageHandler {
   }
 
   // Choose first circulator by default
-  protected async getCirculatorToken() {
+  protected async getCirculator() {
     const baseUrl = `${csConfig.production.chefstepsEndpoint}/api/v0/circulators`
     if (this.circulators.length === 0) {
       throw new Error("Circulators do not exist")
@@ -112,9 +134,8 @@ class StreamMessageHandler {
       type: "GET",
       headers: this.headers,
     })
-    .then((response) => response.token)
   }
 
 }
 
-export default StreamMessageHandler
+export default WebSocketsCirculatorManager

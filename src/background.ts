@@ -1,16 +1,5 @@
-import StreamMessageHandler from "./StreamMessageHandler"
+import WebSocketsCirculatorManager from "./WebSocketsCirculatorManager"
 
-// see bundle.js:43895
-// const hexToByteAddress = (hexAddress) => {
-//   if (hexAddress.length % 2 !== 0) {
-//     throw new Error("Not a valid address, must be multiple of 2: " + hexAddress);
-//   }
-//   if (hexAddress.length > 18) {
-//     throw new Error("Address is too long: " + hexAddress);
-//   }
+const webSocketsCirculatorManager = new WebSocketsCirculatorManager()
 
-//   return hexToBytes(hexAddress);
-// }
-const streamMessageHandler = new StreamMessageHandler()
-
-streamMessageHandler.init()
+webSocketsCirculatorManager.init()
