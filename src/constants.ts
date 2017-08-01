@@ -56,7 +56,7 @@ const csConfig = {
             development: "https://www.chefsteps.com/api/v0/content_config/manifest?content_env=development",
             staging: "https://www.chefsteps.com/api/v0/content_config/manifest?content_env=staging",
             production: "https://www.chefsteps.com/api/v0/content_config/manifest?content_env=production"
-        }
+        },
     },
 }
 
@@ -119,4 +119,32 @@ const errorTypes = {
   webSocketUnreachableAddress: "webSocketUnreachableAddress",
 }
 
-export { csConfig, circulatorConnectionStates, disconnectReasons, errorTypes }
+const connectionProvidersConfig =  {
+    bluetooth: {
+        type: "bluetooth",
+        discovery: {
+            streamServiceUUID: "700B4321-9836-4383-A2B2-31A9098D1473",
+            manufacturerId: "0159"
+        },
+        communication: {
+            fileCharacteristicUUID: "700B4326-9836-4383-A2B2-31A9098D1473",
+            subscribeCharacteristicUUID: "700B4325-9836-4383-A2B2-31A9098D1473",
+            readCharacteristicUUID: "700B4323-9836-4383-A2B2-31A9098D1473",
+            writeCharacteristicUUID: "700B4322-9836-4383-A2B2-31A9098D1473"
+        },
+        reconnectBaseTime: 2e4,
+        connectionTimeout: 1e4,
+        scanTimeout: 4e3,
+        submitKeyTimeoutSeconds: 5,
+        startKeyExchangeTimeoutSeconds: 35
+    },
+    webSocket: {
+        type: "webSocket",
+        discovery: csConfig.production.webSocketEndpoint,
+        reconnectBaseTime: 2e4,
+        connectionTimeout: 1e4,
+        pingTimeoutSeconds: 10
+    },
+}
+
+export { csConfig, circulatorConnectionStates, disconnectReasons, errorTypes, connectionProvidersConfig }
