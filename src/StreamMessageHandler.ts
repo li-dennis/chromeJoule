@@ -1,6 +1,8 @@
 import * as ByteBuffer from "bytebuffer"
+import WebSocketAddressConnection from "./AddressConnection"
 import { IStreamMessage, ListOperationsReply, ListStreamsReply, StreamMessage } from "./protobuf-files/base.js"
 import Stream from "./Streams"
+import WebSocketConnection from "./WebSocketConnection"
 
 // from message-handler.js
 class LRUCache {
@@ -31,6 +33,7 @@ class LRUCache {
 
 // From message-handler.js
 class HandlePool {
+  private recipientAddress: ByteBuffer
   private lruSize = 128
   private maxHandle: number
   private randFunc = Math.random
@@ -38,13 +41,14 @@ class HandlePool {
   private recentlyUsed = []
   private MAX_ITERATIONS = 256
 
-  constructor(even = false, maxHandle = 999999) {
+  constructor(even = false, maxHandle = 999999, recipientAddress?) {
     this.maxHandle = maxHandle - this.lruSize * 2
     if (this.maxHandle / this.lruSize < 10) {
       throw new Error("Pool size too small, choose a bigger maxHandle: " + maxHandle)
     }
 
     this.isEven = even
+    this.recipientAddress = recipientAddress
   }
 
   public isInPool(h) {
@@ -75,89 +79,51 @@ class HandlePool {
 }
 
 class StreamMessageHandler {
-  private streams = {}
-  private handlePools = {}
-  private managedListeners = []
-  private availableOutputs = {}
-  private logPrefix = ""
-  private recentlyClosed = new LRUCache(64)
+  private stream: Stream
   private myAddress: ByteBuffer
+  private handlePool: HandlePool
 
-  constructor(myAddress: ByteBuffer) {
+  // Since we are not an event driven model, the streams control the connections. In the chefsteps version, this dependency is reversed.
+  private webSocketAddressConnection: WebSocketAddressConnection
+  private webSocketConnection: WebSocketConnection
+
+  // Use only one handlePool instead of allowing for multiple devices.
+  constructor(myAddress: ByteBuffer, userToken: string) {
     this.myAddress = myAddress
-
-    this.registerOutput("listStreamsRequest", (stream) => {
-      let handle, msg, streams, tstream
-      streams = this.streamsFor(stream.remoteAddress)
-
-      Object.keys(streams).map((handle) => {
-        tstream = streams[handle]
-        tstream.send({ listStreamsReply: new ListStreamsReply() })
-      })
-
-      return stream.end()
-    })
-
-    this.registerOutput("listOperationsRequest", (stream) => {
-      Object.keys(this.availableOutputs).map((key) => {
-        const listOperationsReply = new ListOperationsReply({name: key})
-        stream.send({ listOperationsReply })
-      })
-      return stream.end()
-    })
+    this.webSocketConnection = new WebSocketConnection(myAddress, userToken)
   }
 
-  public openStreamcount() {
-    let count = 0;
+  public async initiateStream(streamMessage: StreamMessage) {
+    this.webSocketAddressConnection = new WebSocketAddressConnection(streamMessage.senderAddress, this.webSocketConnection)
+    await this.webSocketAddressConnection.openAndAuthorizee()
 
-    Object.keys(this.streams).map((remoteHexAddress) => {
-      const streams = this.streams[remoteHexAddress]
-      count += Object.keys(streams).length
-    })
-    return count
+    const isEven = streamMessage.recipientAddress > this.myAddress.toHex()
+    this.handlePool = new HandlePool(isEven)
+
+    const handle = this.handlePool.getHandle()
+    streamMessage.handle = handle
+
+    this.stream = new Stream(streamMessage, true)
+    this.send(streamMessage)
+    this.stream.start()
   }
 
-  public send() {
-
+  public send(message: StreamMessage) {
+    message.senderAddress = this.myAddress
+    this.webSocketAddressConnection.write(message)
   }
 
-  public handleEncodedMessage() {
-
+  public handleEncodedMessage(encodedMsg: Uint8Array) {
+    return this.handleMessage(StreamMessage.decode(encodedMsg))
   }
 
-  public handleMessage() {
-
+  public handleMessage(streamMessage: StreamMessage) {
+    // handle message logic goes here
   }
 
-  public registerOutput(type: string, func: ((Stream) => {})) {
-    return this.availableOutputs[type] = func
+  public initiateStreamAndWait(initMessage: StreamMessage) {
+    this.initiateStream(initMessage)
   }
-
-  public getNewHandle() {
-
-  }
-
-  public handlePoolFor() {
-
-  }
-
-  public initiateStream() {
-
-  }
-
-  public initiateStreamAndWait() {
-
-  }
-
-  public streamsFor(remoteAddress: ByteBuffer) {
-    const remoteHexAddress = remoteAddress.toHex()
-    if (this.streams[remoteHexAddress] === void 0) {
-      this.streams[remoteHexAddress] = {}
-    }
-    return this.streams[remoteHexAddress]
-  }
-
-
 }
 
 export default StreamMessageHandler

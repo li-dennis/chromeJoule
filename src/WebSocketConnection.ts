@@ -1,4 +1,5 @@
 import { connectionProvidersConfig } from "./constants"
+import StreamMessageHandler from "./StreamMessageHandler"
 
 class WebSocketConnection {
   public socket: WebSocket = null
@@ -40,14 +41,18 @@ class WebSocketConnection {
   }
 
   public close() {
-    this.socket.close()
+    this.socket && this.socket.close()
     this.socket = null
   }
 
-  public send(buffer: ArrayBuffer) {
+  public write(buffer: ArrayBuffer) {
     console.log("Sending ", buffer)
     this.socket.send(buffer)
   }
+
+  // public async createHandler() {
+  //   return new StreamMessageHandler(this.applicationAddress)
+  // }
 }
 
 export default WebSocketConnection

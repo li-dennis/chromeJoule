@@ -16,15 +16,19 @@ class WebSocketAddressConnection {
     this.webSocketConnection = webSocketConnection
   }
 
-  async open() {
+  public async open() {
     return this.webSocketConnection.open()
   }
 
-  async startKeyExchange() {
-    return new Promise(null)
+  public async write(message: ArrayBuffer) {
+    return this.webSocketConnection.write(message)
   }
 
-  async openAndAuthorizee() {
+  public async startKeyExchange() {
+    return null
+  }
+
+  public async openAndAuthorizee() {
     await this.open()
     const byteCirculatorAddress = ByteBuffer.fromHex(this.circulatorAddress)
 
@@ -36,6 +40,7 @@ class WebSocketAddressConnection {
       ping,
     })
   }
+
 }
 
 export default WebSocketAddressConnection

@@ -8,14 +8,10 @@ class Stream {
   private localAddress: Uint8Array
   private handle: number = 0
 
-  // weird circular dependency....
-  private parentHandleer: StreamMessageHandler
-
-  constructor(initMessage, parentHandler, locallyInitiated) {
+  constructor(initMessage, locallyInitiated) {
     this.locallyInitiated = locallyInitiated
     this.initMessage = initMessage
     this.handle = initMessage.handle
-    this.parentHandleer = parentHandler
 
     if (this.locallyInitiated) {
       this.remoteAddress = initMessage.recipientAddress
@@ -41,7 +37,6 @@ class Stream {
     })
 
     console.log("Ending ", streamMessage)
-    this.parentHandleer.send(streamMessage)
     this.cleanUp()
   }
 
@@ -52,7 +47,6 @@ class Stream {
     })
 
     console.log("Sending ", streamMessage)
-    this.parentHandleer.send(streamMessage)
     if (streamMessage.end) {
       return this.cleanUp()
     }
@@ -60,12 +54,9 @@ class Stream {
 
   public start() {
     console.log("Initiating Stream " + (this.initMessage))
-    return this.send()
   }
 
-  public cleanUp() {
-    this.parentHandleer.deleteStream(this)
-  }
+  public cleanUp() { }
 }
 
 export default Stream
