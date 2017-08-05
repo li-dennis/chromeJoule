@@ -10,20 +10,27 @@
   "devDependencies": {
     "@types/chrome": "~0.0.46",
     "Buffer": "0.0.0",
+    "bunyan": "^1.8.12",
     "bytebuffer": "^5.0.1",
     "events": "^1.1.1",
+    "fs": "0.0.1-security",
     "glob": "^7.1.2",
     "jquery": "^3.2.1",
+    "net": "^1.0.2",
     "protobufjs": "^6.8.0",
+    "q": "^1.5.0",
     "source-map-loader": "^0.2.1",
+    "tls": "0.0.1",
     "ts-loader": "^2.3.0",
     "typescript": "latest",
+    "underscore": "^1.8.3",
     "uuid": "^3.1.0",
     "web-request": "^1.0.7",
     "webpack": "^3.3.0",
     "websocket-rpc-stream": "0.0.15"
   },
   "dependencies": {
-    "@types/node": "^8.0.8"
+    "@types/node": "^8.0.8",
+    "exports-loader": "^0.6.4"
   }
 }
