@@ -12,46 +12,46 @@ class WebSocketConnectionProvider {
 
   constructor(applicationAddress) {
     this.applicationAddress = applicationAddress
-    this.type = connectionProvidersConfig.webSocket.type,
-    this.connection = null,
+    this.type = connectionProvidersConfig.webSocket.type
+    this.connection = null
     this.connections = {}
   }
 
-  discover() {
+  public discover() {
       return Q([])
   }
 
-  createConnectionFromEndpoint(endpoint) {
+  public createConnectionFromEndpoint(endpoint) {
       return this.createConnection(endpoint.address)
   }
 
-  createConnectionFromData(e) {
+  public createConnectionFromData(e) {
       return this.createConnection(e.address)
   }
 
-  createConnectionFromCandidate(e) {
+  public createConnectionFromCandidate(e) {
       return this.createConnection(e.address)
   }
 
-  createConnection(circulatorAddress) {
+  public createConnection(circulatorAddress) {
       const id = this.type + "-" + circulatorAddress
       this.connection = new WebSocketConnection(this.applicationAddress)
       this.connections[id] = new WebSocketAddressConnection(id, circulatorAddress, this.connection)
       this.connections[id]
 
-      return this.connection
+      return this.connections[id]
   }
 
-  cleanUp() {
-      _.forEach(this.connections, function(e) {
-          return e.close(disconnectReasons.cleanUp),
-          e = null
-      }),
-      this.connections = {},
+  public cleanUp() {
+      _.forEach(this.connections, (connection) => {
+          connection.close(disconnectReasons.cleanUp)
+          connection = null
+      })
+      this.connections = {}
       this.connection = null
   }
 
-  close() {
+  public close() {
       return _.forEach(this.connections, function(e) {
           return e.close(disconnectReasons.inactive)
       })

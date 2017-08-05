@@ -2,4 +2,4 @@ import WebSocketsCirculatorManager from "./WebSocketsCirculatorManager"
 
 const webSocketsCirculatorManager = new WebSocketsCirculatorManager()
 
-webSocketsCirculatorManager.initiateCirculatorManager()
+webSocketsCirculatorManager.run()

@@ -1,8 +1,9 @@
 const $window = require("exports-loader?window!./bundle.js")
 const EventEmitter = $window.CirculatorSDK.EventEmitter
-import _ from "underscore"
+import * as _ from "underscore"
 import authenticationService from "./authenticationService"
 import { connectionProvidersConfig, connectionState, disconnectReasons } from "./constants"
+import CSWebSocket from "./CSWebSocket"
 import extend from "./extend"
 import rootLogger from "./rootLogger"
 
@@ -117,9 +118,7 @@ WebSocketConnection.prototype.write = function(t) {
 }
 ,
 WebSocketConnection.prototype.getWebSocket = function() {
-    const webSocket = new WebSocket(this.url + "?token=" + authenticationService.getToken())
-    webSocket.binaryType = "arraybuffer"
-
+    const webSocket = new CSWebSocket(this.url + "?token=" + authenticationService.userToken, false)
     return webSocket
 }
 ,

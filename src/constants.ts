@@ -154,4 +154,83 @@ const firmwareUpdateConfig = {
     numFailuresBeforeContactSupport: 3,
 }
 
-export { routingConfig, csConfig, connectionProvidersConfig, disconnectReasons, connectionState, firmwareUpdateConfig }
+const appConfig = {
+    contentTypes: ["collection", "guide", "step"],
+    imageOnlyDevices: ["iPod5,1", "iPhone4,1", "iPad3,1", "iPad3,2", "iPad3,3", "iPad3,4", "iPad3,5", "iPad3,6", "SAMSUNG-SM-G900A", "BLU Advance 5.0"],
+    memorySensitiveDevices: ["iPhone7,1"],
+    defaultView: "home",
+    scanIntervalMilliseconds: 15e3,
+    metadataHeartbeatIntervalMilliseconds: 1e4,
+    resourceManifestFetchTimeoutMilliseconds: 2e4,
+    minimumTemperature: 20,
+    defaultMaximumTemperature: 90,
+    maximumTemperature: 98,
+    assetBasePath: "http://d92f495ogyf88.cloudfront.net/circulator/",
+    applicationResourcesPath: "json/resources.json",
+    latestResourcesPath: "latest/resources.json",
+    jouleSalesPage: "https://www.chefsteps.com/joule",
+    assets: {
+        pairingSuccess: {
+            video: "./videos/pairing-success.mp4",
+            image: "./images/pairing-success.jpg",
+        },
+        trainingSuccess: {
+            video: "./videos/training-success.mp4",
+            image: "./images/training-success.jpg",
+        },
+    },
+    fallbacks: {
+        advertisements: [{
+            image: "./images/default-joule-advertisement.jpg",
+            title: "Explore Tips & Tricks to master Joule!",
+            campaign: "",
+            description: "",
+            buttonTitle: "Let's go",
+            url: "/training",
+        }],
+    },
+    experiments: [{
+        experimentName: "Temp-Reached Popup",
+        variations: ["Default", "Start Timer: MOBCOOK-2434"],
+    }],
+    sounds: {
+        timer: {
+            src: "sounds/timer.mp3",
+            iosSrc: "www/sounds/timer.caf",
+            androidSrc: "file://sounds/timer.mp3",
+            vibrateOptions: {
+                times: 8,
+                distance: 760,
+                duration: 450
+            },
+        },
+    },
+    search: {
+        minQueryLength: 2,
+        shortQueryThreshold: 2,
+        maxResults: {
+            default: 32,
+            shortQuery: 16,
+        },
+        minSearchScore: .05,
+    },
+}
+
+const circulatorConnectionStates = {
+    unpaired: "unpaired",
+    connected: "connected",
+    disconnected: "disconnected",
+    connecting: "connecting",
+    jouleFound: "jouleFound",
+}
+
+const webSocketReadyStates = {
+    connecting: 0,
+    open: 1,
+    closing: 2,
+    closed: 3,
+}
+
+export { routingConfig, csConfig, connectionProvidersConfig,
+disconnectReasons, connectionState, firmwareUpdateConfig, appConfig,
+circulatorConnectionStates, webSocketReadyStates }
