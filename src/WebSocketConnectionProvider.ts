@@ -4,17 +4,19 @@ import { connectionProvidersConfig, disconnectReasons } from "./constants"
 import WebSocketAddressConnection from "./WebSocketAddressConnection"
 import WebSocketConnection from "./WebSocketConnection"
 
+const moduleName = "WebSocketConnectionProvider"
+
 class WebSocketConnectionProvider {
   private applicationAddress: string
   private type: string
-  private connection: any
-  private connections: any
+  private webSocketConnection: any
+  private webSocketAddressConnections: any
 
   constructor(applicationAddress) {
     this.applicationAddress = applicationAddress
     this.type = connectionProvidersConfig.webSocket.type
-    this.connection = null
-    this.connections = {}
+    this.webSocketConnection = null
+    this.webSocketAddressConnections = {}
   }
 
   public discover() {
@@ -22,37 +24,47 @@ class WebSocketConnectionProvider {
   }
 
   public createConnectionFromEndpoint(endpoint) {
+      console.log("WebSocketConnectionProvider creating WebSocketConnection from endpoint", moduleName)
       return this.createConnection(endpoint.address)
   }
 
   public createConnectionFromData(e) {
+      console.log("WebSocketConnectionProvider creating WebSocketConnection from connectionData", moduleName)
       return this.createConnection(e.address)
   }
 
   public createConnectionFromCandidate(e) {
+      console.log("WebSocketConnectionProvider creating WebSocketConnection from connectionData", moduleName)
       return this.createConnection(e.address)
   }
 
   public createConnection(circulatorAddress) {
       const id = this.type + "-" + circulatorAddress
-      this.connection = new WebSocketConnection(this.applicationAddress)
-      this.connections[id] = new WebSocketAddressConnection(id, circulatorAddress, this.connection)
-      this.connections[id]
+      if (!this.webSocketConnection) {
+        console.log("WebSocketConnectionProvider creating new WebSocketConnection", moduleName)
+        this.webSocketConnection = new WebSocketConnection(this.applicationAddress)
+      }
+      if (!this.webSocketAddressConnections[id]) {
+        console.log("WebSocketConnectionProvider creating new WebSocketAddressConnection", moduleName, { id, circulatorAddress })
+        this.webSocketAddressConnections[id] = new WebSocketAddressConnection(id, circulatorAddress, this.webSocketConnection)
+      }
 
-      return this.connections[id]
+      return this.webSocketAddressConnections[id]
   }
 
   public cleanUp() {
-      _.forEach(this.connections, (connection) => {
+      console.log("WebSocketConnectionProvider cleanUp", moduleName)
+      _.forEach(this.webSocketAddressConnections, (connection) => {
           connection.close(disconnectReasons.cleanUp)
           connection = null
       })
-      this.connections = {}
-      this.connection = null
+      this.webSocketAddressConnections = {}
+      this.webSocketConnection = null
   }
 
   public close() {
-      return _.forEach(this.connections, function(e) {
+      console.log("WebSocketConnectionProvider close", moduleName)
+      return _.forEach(this.webSocketAddressConnections, function(e) {
           return e.close(disconnectReasons.inactive)
       })
   }

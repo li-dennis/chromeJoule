@@ -1,7 +1,7 @@
-import * as ByteBuffer from "bytebuffer"
 const { CirculatorSDK } = require("exports-loader?window!./bundle.js")
 import * as _ from "underscore"
 import authenticationService from "./authenticationService"
+import CirculatorProgram from "./CirculatorProgram"
 import { appConfig, circulatorConnectionStates, csConfig, routingConfig } from "./constants"
 import rootLogger from "./rootLogger"
 import WebSocketConnectionProvider from "./WebSocketConnectionProvider"
@@ -81,9 +81,12 @@ class WebSocketsCirculatorManager {
   public async findLastAccessedCirculator() {
     this.setCirculatorConnectionState(circulatorConnectionStates.connecting)
 
-    this.findAllCirculators(true).then((n) => {
+    return this.findAllCirculators(true).then((n) => {
       const lastAccessedCirculator = this.sdkCirculatorManager.findLastAccessedCirculator(n)
       if (lastAccessedCirculator) {
+        lastAccessedCirculator.dataObserver.start().progress(() => {
+          // debugger
+        })
         this.updateCurrentCirculatorClient(lastAccessedCirculator)
         // cacheService.set("usageHistory", "hasEverPaired", !0))
       } else {
@@ -93,10 +96,36 @@ class WebSocketsCirculatorManager {
     })
   }
 
-public async run(){
+  public async startProgram(circulatorProgram?: CirculatorProgram) {
+    const sampleProgram = {
+        createdAt: (new Date()).getTime(),
+        program: {
+            id: "2l8bBpLZx6y6YK0si8Ias6",
+            setPoint: 60,
+            holdingTemperature: 60,
+            programType: "AUTOMATIC",
+            guide: "2nRaLt8kROgASYSOO8mkUw",
+            cookTime: 57600,
+            programMetadata: {
+                guideId: "2nRaLt8kROgASYSOO8mkUw",
+                programId: "2l8bBpLZx6y6YK0si8Ias6",
+                timerId: "3JboTgZjYAqmKomWa4Gwg0",
+                cookId: "477e88699d664b139ba4433898ee85ac",
+            },
+        },
+    }
+
+    this.currentCirculatorClient.startProgram(new CirculatorProgram(sampleProgram.program))
+    // TODO: update cook history API service
+  }
+
+  public async
+
+  public async run(){
     await this.initiateCirculatorManager()
     await this.circulatorScan()
     await this.findLastAccessedCirculator()
+    // await this.startProgram()
   }
 }
 
