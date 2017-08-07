@@ -1,11 +1,10 @@
-const $window = require("exports-loader?window!./bundle.js")
+const { Q, CirculatorSDK } = require("exports-loader?window!./bundle.js")
 import * as EventEmitter from "events"
 import { connectionProvidersConfig, connectionState, disconnectReasons, firmwareUpdateConfig } from "./constants"
 import rootLogger from "./rootLogger"
 import WebSocketConnection from "./WebSocketConnection"
 
 const moduleName = "WebSocketAddressConnection"
-const Connection = $window.CirculatorSDK.Connection
 
 class WebSocketAddressConnection extends EventEmitter  {
   public webSocketConnection: WebSocketConnection
@@ -22,7 +21,7 @@ class WebSocketAddressConnection extends EventEmitter  {
 
   constructor(id, circulatorAddress, webSocketConnection) {
     super()
-    Connection.call(this, id, circulatorAddress, webSocketConnection)
+    CirculatorSDK.Connection.call(this, id, circulatorAddress, webSocketConnection)
     this.id = id
     this.circulatorAddress = circulatorAddress
     this.webSocketConnection = webSocketConnection
@@ -48,19 +47,19 @@ class WebSocketAddressConnection extends EventEmitter  {
   }
 
   public startKeyExchange() {
-    return $window.Q(null)
+    return Q(null)
   }
 
   public openAndAuthorize(connectionTimeout = connectionProvidersConfig.webSocket.connectionTimeout) {
     if (this.connectionState === connectionState.connectedAuthorized) {
         this.emit("authorize")
-        return $window.Q()
+        return Q()
     }
 
-    this.open(connectionTimeout).then(() => {
+    return this.open(connectionTimeout).then(() => {
       if (this.connectionState === connectionState.connectedAuthorized){
         this.emit("authorize")
-        return $window.Q()
+        return Q()
       }
       if (this.connectionState !== connectionState.connected) {
         throw new Error("Invalid connection state during authorize")
@@ -73,16 +72,16 @@ class WebSocketAddressConnection extends EventEmitter  {
         this.circulatorAddress, moduleName, { circulatorAddress:
         this.circulatorAddress })
 
-      const streamMessage = (new $window.CirculatorSDK.messages.StreamMessage)
-        .setRecipientAddress($window.CirculatorSDK.hexToByteAddress(this.circulatorAddress))
-        .set("ping", new $window.CirculatorSDK.messages.Ping)
+      const streamMessage = (new CirculatorSDK.messages.StreamMessage())
+        .setRecipientAddress(CirculatorSDK.hexToByteAddress(this.circulatorAddress))
+        .set("ping", new CirculatorSDK.messages.Ping())
 
       const timeoutOptions = {
           maxResponses: 1,
           timeoutSecs: connectionProvidersConfig.webSocket.pingTimeoutSeconds,
       }
 
-      this.webSocketConnection.handler.initiateStreamAndWait(streamMessage, timeoutOptions).then((response) => {
+      return this.webSocketConnection.handler.initiateStreamAndWait(streamMessage, timeoutOptions).then((response) => {
         if (response.timedOut) {
           throw new Error("Stream response has timed out")
         }
@@ -120,19 +119,19 @@ class WebSocketAddressConnection extends EventEmitter  {
   public write(data) {
     if (this.connectionState === connectionState.connected ||
         this.connectionState === connectionState.connectedAuthorized) {
-      return this.webSocketConnection.write(data)
+      return Q(this.webSocketConnection.write(data))
     }
-    const message = $window.CirculatorSDK.messages.StreamMessage.decode(data)
+    const message = CirculatorSDK.messages.StreamMessage.decode(data)
     const errorMessage = `WebSocketAddressConnection attempt to write message
         ${message.getMessageType()} without being connected! connectionState:
         ${this.connectionState}`
 
     console.warn(errorMessage, moduleName, { circulatorAddress: this.circulatorAddress })
-    return $window.Q.reject(new Error(errorMessage))
+    return Q.reject(new Error(errorMessage))
   }
 
   public getFileSender(address, file, blockSize, stream) {
-    return new $window.CirculatorSDK.WebSocketFileSender(address, file, stream, rootLogger, {
+    return new CirculatorSDK.WebSocketFileSender(address, file, stream, rootLogger, {
         blockSize,
         transferFileBlockTimeoutSecs: firmwareUpdateConfig.transferFileBlockTimeoutSecs,
         transferFileBlockRetryAttempts: firmwareUpdateConfig.transferFileBlockRetryAttempts,
@@ -148,7 +147,7 @@ class WebSocketAddressConnection extends EventEmitter  {
   }
 
   public onMessageHandler = (data) => {
-    const message = $window.CirculatorSDK.messages.StreamMessage.decode(data)
+    const message = CirculatorSDK.messages.StreamMessage.decode(data)
     const senderAddress = message.getSenderAddress().toHex()
 
     if (senderAddress === this.circulatorAddress) {

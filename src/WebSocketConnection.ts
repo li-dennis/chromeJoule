@@ -1,4 +1,4 @@
-const $window = require("exports-loader?window!./bundle.js")
+const { Q, CirculatorSDK } = require("exports-loader?window!./bundle.js")
 import * as EventEmitter from "events"
 import * as _ from "underscore"
 import authenticationService from "./authenticationService"
@@ -32,10 +32,10 @@ class WebSocketConnection extends EventEmitter {
     this.openTimeout = null
   }
 
-  open(connectionTimeout = connectionProvidersConfig.webSocket.connectionTimeout) {
+  public open(connectionTimeout = connectionProvidersConfig.webSocket.connectionTimeout) {
     if (this.connectionState === connectionState.connected) {
       this.emit("open")
-      return $window.Q()
+      return Q()
     }
     console.log("WebSocketConnection open", moduleName)
     if (this.openDeferred) {
@@ -44,12 +44,12 @@ class WebSocketConnection extends EventEmitter {
     const openDate = new Date()
     this.clearOpenTimeout()
     this.setOpenTimeout(connectionTimeout)
-    this.openDeferred = $window.Q.defer()
+    this.openDeferred = Q.defer()
     this.connectionState = connectionState.connecting
     this.webSocket = this.getWebSocket()
     this.emit("connecting")
     this.webSocket.onMessage((messageEvent) => {
-      const streamMessage = $window.CirculatorSDK.messages.StreamMessage.decode(messageEvent)
+      const streamMessage = CirculatorSDK.messages.StreamMessage.decode(messageEvent)
 
       if (_.indexOf(["connectionReadyReply", "ping"], streamMessage.getMessageType()) > -1) {
         console.log("WebSocketConnection is handling " + streamMessage.getMessageType(), moduleName)
@@ -88,8 +88,8 @@ class WebSocketConnection extends EventEmitter {
       })
       this.handler.registerOutput("ping", (t) => {
         console.log("WebSocketConnection got ping, sending pong", moduleName)
-        const response = new $window.CirculatorSDK.messages.StreamMessage()
-          .set("pong", new $window.CirculatorSDK.messages.Pong()).setEnd(true)
+        const response = new CirculatorSDK.messages.StreamMessage()
+          .set("pong", new CirculatorSDK.messages.Pong()).setEnd(true)
 
         this.write(response)
       })
@@ -131,14 +131,16 @@ class WebSocketConnection extends EventEmitter {
   }
 
   public write(data) {
-    const deferred =  $window.Q.defer()
-    const message = $window.CirculatorSDK.messages.StreamMessage.decode(data)
+    const deferred =  Q.defer()
+    const message = CirculatorSDK.messages.StreamMessage.decode(data)
 
     try {
       this.webSocket && this.webSocket.send(data)
       deferred.resolve()
     } catch (error) {
       deferred.reject(error)
+      console.warn("WebSocketConnection closing connection after write failure for message " +
+        message.getmessagetype(), moduleName, { error })
       this.close(disconnectReasons.writeError)
     }
 
@@ -146,13 +148,12 @@ class WebSocketConnection extends EventEmitter {
   }
 
   public getWebSocket() {
-    const webSocket = new CSWebSocket(this.url + "?token=" + authenticationService.userToken, false)
-    return webSocket
+    return new CSWebSocket(this.url + "?token=" + authenticationService.userToken, false)
   }
 
   public createHandler() {
-    return new $window.CirculatorSDK.StreamMessageHandler({
-        myAddress: $window.CirculatorSDK.hexToByteAddress(this.applicationAddress),
+    return new CirculatorSDK.StreamMessageHandler({
+        myAddress: CirculatorSDK.hexToByteAddress(this.applicationAddress),
         log: rootLogger,
         handlerType: "webSocketConnection",
     })

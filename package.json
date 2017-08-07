@@ -8,14 +8,13 @@
     "watch": "./node_modules/.bin/webpack -w"
   },
   "devDependencies": {
-    "@types/chrome": "~0.0.46",
+    "Buffer": "0.0.0",
     "bunyan": "^1.8.12",
     "bytebuffer": "^5.0.1",
     "events": "^1.1.1",
     "glob": "^7.1.2",
     "jquery": "^3.2.1",
     "protobufjs": "^6.8.0",
-    "q": "^1.5.0",
     "source-map-loader": "^0.2.1",
     "ts-loader": "^2.3.0",
     "typescript": "latest",

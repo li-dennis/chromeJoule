@@ -1,4 +1,3 @@
-const $window = require("exports-loader?window!./bundle.js")
 import { webSocketReadyStates } from "./constants"
 
 class CSWebSocket {
