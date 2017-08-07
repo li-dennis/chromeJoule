@@ -125,7 +125,7 @@ class WebSocketsCirculatorManager {
     await this.initiateCirculatorManager()
     await this.circulatorScan()
     await this.findLastAccessedCirculator()
-    // await this.startProgram()
+    await this.startProgram()
   }
 }
 
