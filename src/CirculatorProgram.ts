@@ -1,18 +1,19 @@
-const $window = require("exports-loader?window!./bundle.js")
+const { Uuid } = require("exports-loader?window!./bundle.js")
 
 class CirculatorProgram {
-  public setPoint: any
-  public cookTime: any
-  public delayedStart: any
-  public holdingTemperature: any
-  public waitForPreheat: any
+  public setPoint: number
+  public cookTime: number
+  public delayedStart: boolean
+  public holdingTemperature: number
+  public waitForPreheat: boolean
   public turbo: any
   public predictive: any
-  public programType: any
-  public guide: any
-  public id: any
+  public programType: string
+  public guide: string
+  public id: string
   public programMetadata: { programId?: any, cookId?: string, timerId?: string }
-  public idempotencyId: any
+
+  public idempotencyId: string = Uuid.v4()
 
   constructor(options) {
     this.setPoint = options.setPoint
@@ -26,7 +27,6 @@ class CirculatorProgram {
     this.guide = options.guide
     this.id = options.id
     this.programMetadata = options.programMetadata
-    this.idempotencyId = options.idempotencyId
   }
 
   public asApiPersistable() {

@@ -45,6 +45,7 @@ class WebSocketConnection extends EventEmitter {
     this.clearOpenTimeout()
     this.setOpenTimeout(connectionTimeout)
     this.openDeferred = Q.defer()
+
     this.connectionState = connectionState.connecting
     this.webSocket = this.getWebSocket()
     this.emit("connecting")
@@ -110,6 +111,7 @@ class WebSocketConnection extends EventEmitter {
         this.close(disconnectReasons.terminatedByOther)
       }
     })
+
     return this.openDeferred.promise
   }
 

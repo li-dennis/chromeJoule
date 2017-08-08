@@ -1,4 +1,4 @@
-const { CirculatorSDK } = require("exports-loader?window!./bundle.js")
+const { CirculatorSDK, CSApiClient } = require("exports-loader?window!./bundle.js")
 import * as _ from "underscore"
 import authenticationService from "./authenticationService"
 import CirculatorProgram from "./CirculatorProgram"
@@ -17,6 +17,8 @@ class WebSocketsCirculatorManager {
   private currentCirculatorClient: any
   private cachedFindAllCirculators
 
+  private cookHistoryApi: any
+
   public async initiateCirculatorManager() {
     this.userToken = await authenticationService.initiate()
 
@@ -32,6 +34,8 @@ class WebSocketsCirculatorManager {
       apiConfig: csConfig,
       userAuthenticationToken: this.userToken,
     })
+
+    this.cookHistoryApi = new CSApiClient.CookHistoryApi(csConfig.chefstepsEndpoint, (() => this.userToken), rootLogger)
   }
 
   public resetScanTimer() {
@@ -96,7 +100,7 @@ class WebSocketsCirculatorManager {
     })
   }
 
-  public async startProgram(circulatorProgram?: CirculatorProgram) {
+  public async startProgram(circulatorProgramOpt?: CirculatorProgram) {
     const sampleProgram = {
         createdAt: (new Date()).getTime(),
         program: {
@@ -115,11 +119,12 @@ class WebSocketsCirculatorManager {
         },
     }
 
-    this.currentCirculatorClient.startProgram(new CirculatorProgram(sampleProgram.program))
-    // TODO: update cook history API service
-  }
+    const circulatorProgram = new CirculatorProgram(sampleProgram.program)
 
-  public async
+    this.currentCirculatorClient.startProgram(circulatorProgram)
+
+    this.cookHistoryApi.create(circulatorProgram.asApiPersistable())
+  }
 
   public async run(){
     await this.initiateCirculatorManager()
