@@ -1,0 +1,27 @@
+import 'base.proto';
+
+enum SystemActor {
+  COOKING_APP = 1;
+  CIRCULATOR = 2;
+  SERVICE = 3;
+  PREDICTIVE_COOKING = 4;
+}
+
+//*****************************************************************************
+// Remote messages
+//*****************************************************************************
+
+// Remote messages are used when the recipient is not directly connected to the
+// sender.  For example, the app sending a message to the circulator via the web
+// service.
+message RemoteMessage {
+  optional fixed32 handle = 10;
+  optional bool end = 11;
+
+  required SystemActor senderType = 1;
+  required uint32 senderId = 2; // int is probably the wrong type
+  required SystemActor receiverType = 3;
+  required uint32 receiverId = 4;
+
+  required bytes encodedStreamMessage = 5;
+}
