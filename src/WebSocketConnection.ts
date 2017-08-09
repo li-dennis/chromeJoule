@@ -2,7 +2,7 @@ const { Q, CirculatorSDK } = require("exports-loader?window!./bundle.js")
 import * as EventEmitter from "events"
 import * as _ from "underscore"
 import authenticationService from "./authenticationService"
-import { connectionProvidersConfig, connectionState, disconnectReasons } from "./constants"
+import { connectionProvidersConfig, connectionStates, disconnectReasons } from "./constants"
 import CSWebSocket from "./CSWebSocket"
 import rootLogger from "./rootLogger"
 
@@ -26,14 +26,14 @@ class WebSocketConnection extends EventEmitter {
     this.webSocket = null
     this.handler = null
     this.url = connectionProvidersConfig.webSocket.discovery
-    this.connectionState = connectionState.disconnected
+    this.connectionState = connectionStates.disconnected
     this.disconnectReason = disconnectReasons.initialState
     this.openDeferred = null
     this.openTimeout = null
   }
 
   public open(connectionTimeout = connectionProvidersConfig.webSocket.connectionTimeout) {
-    if (this.connectionState === connectionState.connected) {
+    if (this.connectionState === connectionStates.connected) {
       this.emit("open")
       return Q()
     }
@@ -46,7 +46,7 @@ class WebSocketConnection extends EventEmitter {
     this.setOpenTimeout(connectionTimeout)
     this.openDeferred = Q.defer()
 
-    this.connectionState = connectionState.connecting
+    this.connectionState = connectionStates.connecting
     this.webSocket = this.getWebSocket()
     this.emit("connecting")
     this.webSocket.onMessage((messageEvent) => {
@@ -77,7 +77,7 @@ class WebSocketConnection extends EventEmitter {
         const replyDate = new Date()
         const openTime = replyDate.getDate() - openDate.getDate()
         console.log("WebSocketConnection is ready for connection", moduleName, { openTime })
-        this.connectionState = connectionState.connected
+        this.connectionState = connectionStates.connected
 
         replyMessage.end()
 
@@ -105,7 +105,7 @@ class WebSocketConnection extends EventEmitter {
     })
     this.webSocket.onClose(() => {
       console.warn("WebSocketConnection on connection close", moduleName, { connectionState: this.connectionState })
-      if (this.connectionState !== connectionState.disconnected) {
+      if (this.connectionState !== connectionStates.disconnected) {
         this.openDeferred && this.openDeferred.reject(new Error("WebSocketConnection on connection close"))
         this.openDeferred = null
         this.close(disconnectReasons.terminatedByOther)
@@ -116,7 +116,7 @@ class WebSocketConnection extends EventEmitter {
   }
 
   public close(reason) {
-    this.connectionState = connectionState.disconnected
+    this.connectionState = connectionStates.disconnected
 
     this.disconnectReason = reason
     this.webSocket && this.webSocket.close()
@@ -164,7 +164,7 @@ class WebSocketConnection extends EventEmitter {
   public setOpenTimeout(timeout) {
     return this.openTimeout = window.setTimeout(() => {
       const isPending = this.openDeferred && this.openDeferred.promise && this.openDeferred.isPending()
-      const isConnecting = this.connectionState === connectionState.connecting
+      const isConnecting = this.connectionState === connectionStates.connecting
 
       if (isPending && isConnecting) {
         this.openDeferred && this.openDeferred.reject()

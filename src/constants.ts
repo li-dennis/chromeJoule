@@ -127,7 +127,7 @@ const disconnectReasons = {
     pairingFail: "PAIRING_FAIL",
 }
 
-const connectionState = {
+const connectionStates = {
     disconnected: "DISCONNECTED",
     connected: "CONNECTED",
     connectedAuthorized: "CONNECTED_AUTHORIZED",
@@ -237,5 +237,4 @@ const CirculatorStates = {
 }
 
 export { routingConfig, csConfig, connectionProvidersConfig,
-disconnectReasons, connectionState, firmwareUpdateConfig, appConfig,
-circulatorConnectionStates, webSocketReadyStates, CirculatorStates }
+disconnectReasons, connectionStates, firmwareUpdateConfig, appConfig, circulatorConnectionStates, webSocketReadyStates, CirculatorStates }

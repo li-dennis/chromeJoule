@@ -1,6 +1,6 @@
 const { Q, CirculatorSDK } = require("exports-loader?window!./bundle.js")
 import * as EventEmitter from "events"
-import { connectionProvidersConfig, connectionState, disconnectReasons, firmwareUpdateConfig } from "./constants"
+import { connectionProvidersConfig, connectionStates, disconnectReasons, firmwareUpdateConfig } from "./constants"
 import rootLogger from "./rootLogger"
 import WebSocketConnection from "./WebSocketConnection"
 
@@ -30,7 +30,7 @@ class WebSocketAddressConnection extends EventEmitter  {
     this.supportsSendingFile = !0
     this.preferredFileTransferBlockSize = 128
     this.isAlwaysActive = !0
-    this.connectionState = connectionState.disconnected
+    this.connectionState = connectionStates.disconnected
     this.disconnectReason = disconnectReasons.initialState
 
     this.webSocketConnection.on("open", this.onOpenHandler)
@@ -51,17 +51,17 @@ class WebSocketAddressConnection extends EventEmitter  {
   }
 
   public openAndAuthorize(connectionTimeout = connectionProvidersConfig.webSocket.connectionTimeout) {
-    if (this.connectionState === connectionState.connectedAuthorized) {
+    if (this.connectionState === connectionStates.connectedAuthorized) {
         this.emit("authorize")
         return Q()
     }
 
     return this.open(connectionTimeout).then(() => {
-      if (this.connectionState === connectionState.connectedAuthorized){
+      if (this.connectionState === connectionStates.connectedAuthorized){
         this.emit("authorize")
         return Q()
       }
-      if (this.connectionState !== connectionState.connected) {
+      if (this.connectionState !== connectionStates.connected) {
         throw new Error("Invalid connection state during authorize")
       }
       if (null == this.webSocketConnection.handler) {
@@ -91,10 +91,10 @@ class WebSocketAddressConnection extends EventEmitter  {
           if (messageType === "pong") {
             console.log("WebSocketAddressConnection openAndAuthorize got pong response back",
               moduleName, { circulatorAddress: this.circulatorAddress })
-            if (this.connectionState === connectionState.disconnected) {
+            if (this.connectionState === connectionStates.disconnected) {
               throw new Error("Connection is closed while receiving pong")
             }
-            this.setConnectionState(connectionState.connectedAuthorized)
+            this.setConnectionState(connectionStates.connectedAuthorized)
             return firstMessage
           }
           console.warn("WebSocketAddressConnection openAndAuthorize has failed with msgType " + messageType,
@@ -117,8 +117,8 @@ class WebSocketAddressConnection extends EventEmitter  {
   }
 
   public write(data) {
-    if (this.connectionState === connectionState.connected ||
-        this.connectionState === connectionState.connectedAuthorized) {
+    if (this.connectionState === connectionStates.connected ||
+        this.connectionState === connectionStates.connectedAuthorized) {
       return Q(this.webSocketConnection.write(data))
     }
     const message = CirculatorSDK.messages.StreamMessage.decode(data)
@@ -139,11 +139,11 @@ class WebSocketAddressConnection extends EventEmitter  {
   }
 
   public onOpenHandler = () => {
-    return this.setConnectionState(connectionState.connected)
+    return this.setConnectionState(connectionStates.connected)
   }
 
   public onConnectingHandler = () => {
-    return this.setConnectionState(connectionState.connecting)
+    return this.setConnectionState(connectionStates.connecting)
   }
 
   public onMessageHandler = (data) => {
@@ -157,14 +157,14 @@ class WebSocketAddressConnection extends EventEmitter  {
 
   public onCloseHandler = (reason) => {
     this.disconnectReason = reason
-    return this.setConnectionState(connectionState.disconnected)
+    return this.setConnectionState(connectionStates.disconnected)
   }
 
   public onRecipientUnavailableReplyHandler = (reply) => {
     const recipientAddress = reply.getRecipientUnavailableReply().getRecipientAddress().toHex()
     if (recipientAddress === this.circulatorAddress) {
       this.close(disconnectReasons.unreachableAddress)
-      this.setConnectionState(connectionState.disconnected)
+      this.setConnectionState(connectionStates.disconnected)
     }
   }
 
@@ -179,13 +179,13 @@ class WebSocketAddressConnection extends EventEmitter  {
     this.connectionState = nextState
 
     switch (this.connectionState) {
-      case connectionState.connected:
+      case connectionStates.connected:
         return this.emit("open")
-      case connectionState.connectedAuthorized:
+      case connectionStates.connectedAuthorized:
         return this.emit("authorize")
-      case connectionState.connecting:
+      case connectionStates.connecting:
         return this.emit("connecting")
-      case connectionState.disconnected:
+      case connectionStates.disconnected:
         return this.emit("close", this.disconnectReason)
       default:
         return

@@ -7,16 +7,13 @@ import rootLogger from "./rootLogger"
 import WebSocketConnectionProvider from "./WebSocketConnectionProvider"
 
 class WebSocketsCirculatorManager {
-  private headers: any = { "Content-Type": "application/x-www-form-urlencoded" }
+  public currentCirculatorClient: any
+  public sdkCirculatorManager: any
 
   private userToken: string
-  private sdkCirculatorManager: any
   private scanTimer = null
-  private circulatorClient = null
   private circulatorConnectionState: any
-  public currentCirculatorClient: any
   private cachedFindAllCirculators
-
   private cookHistoryApi: any
 
   public initiateCirculatorManager(userInfo) {

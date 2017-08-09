@@ -2,3 +2,8 @@ body {
   width: 400px;
   min-height: 100px;
 }
+
+.loading-container {
+  position: relative;
+  min-height: 100px
+}
