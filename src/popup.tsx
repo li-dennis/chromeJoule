@@ -65,7 +65,7 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
           <div>
             Cook time: <input type="number" value={this.state.cookTime} onChange={this.handleCookTime} />
           </div>
-          <div onClick={this.startProgram}>Start</div>
+          <button onClick={this.startProgram}>Start</button>
         </div>
       )
     } else if (client.circulatorState === CirculatorStates.cooking) {
@@ -75,7 +75,7 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
           <div className="current-temperature">
             Current temp: {bathTemp ? `${bathTemp.toFixed(1)} C` : "Fetching..." }
           </div>
-          <div onClick={this.stopProgram}>Stop</div>
+          <button onClick={this.stopProgram}>Stop</button>
         </div>
       )
     }
