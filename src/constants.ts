@@ -233,7 +233,7 @@ const webSocketReadyStates = {
 
 const CirculatorStates = {
   idle: "IDLE",
-  cooking: "COOKING"
+  cooking: "COOKING",
 }
 
 export { routingConfig, csConfig, connectionProvidersConfig,

@@ -2,26 +2,29 @@ import * as React from "react"
 const { Uuid } = require("exports-loader?window!./bundle.js")
 import * as ReactDOM from "react-dom"
 import authenticationService from "./authenticationService"
-import { CirculatorStates } from "./constants"
+import { circulatorConnectionStates, CirculatorStates } from "./constants"
 import WebSocketsCirculatorManager from "./WebSocketsCirculatorManager"
 
 interface ICirculatorProgramViewProps {
   circulatorManager: WebSocketsCirculatorManager,
-  circulatorData: any
+  circulatorData: any,
 }
 
 class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps, any> {
+  static minTemp = 20
+
   public state = {
     setPoint: "",
     programType: "MANUAL",
     cookTime: "",
     programMetadata: { cookId: Uuid.v4().split("-").join("") },
+    maxTemp: undefined,
   }
 
   public startProgram = () => {
     this.props.circulatorManager.startProgram({
       setPoint: parseInt(this.state.setPoint),
-      cookTime: this.state.cookTime !== "" ? parseInt(this.state.cookTime) : undefined,
+      cookTime: this.state.cookTime !== "" ? parseInt(this.state.cookTime)  : undefined,
       programType: this.state.programType,
       programMetadata: this.state.programMetadata,
     })
@@ -39,45 +42,93 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
   }
 
   public handleSetPoint = (event) => {
-    // TODO: Handle min/max timep
     this.setState({setPoint: event.target.value})
   }
 
   public handleCookTime = (event) => {
-    // TODO: Handle min/max timep
     this.setState({cookTime: event.target.value})
+  }
+
+  public componentWillMount() {
+    const client = this.props.circulatorManager.currentCirculatorClient
+    // hacks to get max temp
+
+    client.getMaxTemp().then((maxTemp) => this.setState({ maxTemp }))
+    client.on(circulatorConnectionStates.connected, () => {
+      client.identify()
+        .then(() => client.getMaxTemp(true))
+        .then((maxTemp) => this.setState({ maxTemp }))
+    })
+  }
+
+  public validateInput() {
+    // validate input
+    const errors = []
+    if (this.state.setPoint) {
+      const temp = parseInt(this.state.setPoint)
+      if (temp < CirculatorProgramView.minTemp) {
+        errors.push(`Temperature must be above ${CirculatorProgramView.minTemp}°C`)
+      } else if (this.state.maxTemp && temp > this.state.maxTemp) {
+        errors.push(`Temperature must be below ${this.state.maxTemp.toFixed(1)}°C`)
+      }
+    }
+
+    return errors
+  }
+
+  public renderLoading() {
+      return <div className="circulator-program">Getting last accessed joule...</div>
+  }
+
+  public renderIdle() {
+    const client = this.props.circulatorManager.currentCirculatorClient
+    const bathTemp = client.data.bathTemp
+    const errors = this.validateInput()
+    return (
+      <div className="circulator-program">
+        <div className="current-temperature">
+          Current temp: {bathTemp ? `${bathTemp.toFixed(1)} °C` : "Fetching..." }
+        </div>
+        <div className="errors">
+          {errors.map((error) => <div>{error}</div>)}
+        </div>
+        <form>
+          <div>
+            <label>Temp: </label>
+            <input type="number" value={this.state.setPoint} onChange={this.handleSetPoint} />
+            °C
+          </div>
+          <div>
+            <label>Cook time: </label>
+            <input type="number" value={this.state.cookTime} onChange={this.handleCookTime} />
+          </div>
+          <button onClick={this.startProgram} disabled={errors.length === 0}>Start</button>
+        </form>
+      </div>
+    )
+  }
+
+  public renderCooking() {
+    const client = this.props.circulatorManager.currentCirculatorClient
+    const bathTemp = client.data.bathTemp
+    return (
+      <div className="circulator-program">
+        <div className="current-temperature">
+          Current temp: {bathTemp ? `${bathTemp.toFixed(1)} °C` : "Fetching..." }
+        </div>
+        <button onClick={this.stopProgram}>Stop</button>
+      </div>
+    )
   }
 
   public render() {
     const client = this.props.circulatorManager.currentCirculatorClient
     if (!client || !client.circulatorState) {
-      return <div className="circulator-program">Getting last accessed joule...</div>
+      return this.renderLoading()
     } else if (client.circulatorState === CirculatorStates.idle) {
-      const bathTemp = client.data.bathTemp
-      return (
-        <div className="circulator-program">
-          <div className="current-temperature">
-            Current temp: {bathTemp ? `${bathTemp.toFixed(1)} C` : "Fetching..." }
-          </div>
-          <div>
-            Temp: <input type="number" value={this.state.setPoint} onChange={this.handleSetPoint} />
-          </div>
-          <div>
-            Cook time: <input type="number" value={this.state.cookTime} onChange={this.handleCookTime} />
-          </div>
-          <button onClick={this.startProgram}>Start</button>
-        </div>
-      )
+      return this.renderIdle()
     } else if (client.circulatorState === CirculatorStates.cooking) {
-      const bathTemp = client.data.bathTemp
-      return (
-        <div className="circulator-program">
-          <div className="current-temperature">
-            Current temp: {bathTemp ? `${bathTemp.toFixed(1)} C` : "Fetching..." }
-          </div>
-          <button onClick={this.stopProgram}>Stop</button>
-        </div>
-      )
+      return this.renderCooking()
     }
   }
 }
@@ -129,7 +180,10 @@ class Main extends React.Component {
       return (
         <div className="content">
           <div className="name">Welcome {this.state.userInfo.name}</div>
-          <CirculatorProgramView circulatorManager={this.state.circulatorManager} circulatorData={this.state.circulatorData} />
+          <CirculatorProgramView
+            circulatorManager={this.state.circulatorManager}
+            circulatorData={this.state.circulatorData}
+          />
         </div>
       )
     } else if (this.state.loading) {
