@@ -236,5 +236,16 @@ const CirculatorStates = {
   cooking: "COOKING",
 }
 
+const programSteps = {
+  unknown: "UNKNOWN",
+  preheat: "PRE_HEAT",
+  waitForFood: "WAIT_FOR_FOOD",
+  cook: "COOK",
+  waitForRemoveFood: "WAIT_FOR_REMOVE_FOOD",
+  error: "ERROR",
+}
+
 export { routingConfig, csConfig, connectionProvidersConfig,
-disconnectReasons, connectionStates, firmwareUpdateConfig, appConfig, circulatorConnectionStates, webSocketReadyStates, CirculatorStates }
+disconnectReasons, connectionStates, firmwareUpdateConfig, appConfig,
+circulatorConnectionStates, webSocketReadyStates, CirculatorStates,
+programSteps }

@@ -4,7 +4,7 @@ import RaisedButton from "material-ui/RaisedButton"
 import RefreshIndicator from "material-ui/RefreshIndicator"
 import TextField from "material-ui/TextField"
 import * as React from "react"
-import { circulatorConnectionStates, CirculatorStates, connectionStates, disconnectReasons } from "./constants"
+import { circulatorConnectionStates, CirculatorStates, connectionStates, disconnectReasons, programSteps } from "./constants"
 import WebSocketsCirculatorManager from "./WebSocketsCirculatorManager"
 
 interface IActiveCirculatorClientViewProps {
@@ -161,12 +161,36 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
 
   public renderCooking() {
     const client = this.props.circulatorManager.currentCirculatorClient
-    const { bathTemp, timeRemaining } = client.data
-    // TODO: Show target temp
+    const { bathTemp, timeRemaining, programStep } = client.data
+    // TODO: Support adding/removing food
+    const subtitle = `Currently: ${bathTemp.toFixed(1)}°C`
+    const statusMessages = []
+    let title
+    switch (programStep) {
+      case programSteps.preheat:
+        title = "Preheating..."
+        statusMessages.push(`Target temperature: ${client.program.setPoint}°C.`)
+        break
+      case programSteps.waitForFood:
+      case programSteps.cook:
+      case programSteps.waitForRemoveFood:
+        title = "Cooking"
+        break
+      case programSteps.unknown:
+      case programSteps.error:
+        title = "Error"
+        break
+      default:
+        title = "Cook ongoing"
+        break
+    }
+    if (timeRemaining) {
+      statusMessages.push(`Time remaining: ${(timeRemaining / 60).toFixed(0)} minutes`)
+    }
     return (
       <Card>
-        <CardTitle title="Current cook" subtitle={`Currently ${bathTemp.toFixed(1)}°C`} />
-        {timeRemaining && <CardText>Time remaining: {(timeRemaining / 60).toFixed(0)} minutes</CardText>}
+        <CardTitle title={title} subtitle={subtitle} />
+        {statusMessages.map((status) => <CardText>{status}</CardText>)}
         <br />
         <RaisedButton
           label="Stop"
