@@ -5,6 +5,7 @@ import RaisedButton from "material-ui/RaisedButton"
 import RefreshIndicator from "material-ui/RefreshIndicator"
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
 import TextField from "material-ui/TextField"
+import * as moment from "moment"
 import * as ReactDOM from "react-dom"
 import authenticationService from "./authenticationService"
 import { circulatorConnectionStates, CirculatorStates } from "./constants"
@@ -24,26 +25,29 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
     cookTime: "",
     programMetadata: { cookId: Uuid.v4().split("-").join("") },
     maxTemp: undefined,
+    loading: false,
   }
 
   public startProgram = () => {
     this.props.circulatorManager.startProgram({
       setPoint: parseInt(this.state.setPoint),
-      cookTime: this.state.cookTime !== "" ? parseInt(this.state.cookTime)  : undefined,
+      cookTime: this.state.cookTime !== "" ? parseInt(this.state.cookTime) * 60  : undefined,
       programType: this.state.programType,
       programMetadata: this.state.programMetadata,
-    })
+    }).then(() => this.setState({ loading: false}))
 
     this.setState({
       setPoint: "",
       programType: "MANUAL",
       cookTime: "",
       programMetadata: { cookId: Uuid.v4().split("-").join("") },
+      loading: true,
     })
   }
 
   public stopProgram = () => {
-    this.props.circulatorManager.stopProgram()
+    this.props.circulatorManager.stopProgram().then(() => this.setState({ loading: false }))
+    this.setState({ loading: true })
   }
 
   public handleSetPoint = (event, setPoint) => {
@@ -92,16 +96,6 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
     return errors
   }
 
-  public renderCurrentTemp() {
-    const client = this.props.circulatorManager.currentCirculatorClient
-    const bathTemp = client.data.bathTemp
-    return (
-      <Card className="current-temperature">
-        <CardTitle title={`Current temperature: ${bathTemp.toFixed(1)} °C`} />
-      </Card>
-    )
-  }
-
   public renderLoading() {
     return (
       <div className="circulator-program">
@@ -119,63 +113,64 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
 
   public renderIdle() {
     const client = this.props.circulatorManager.currentCirculatorClient
+    const { bathTemp } = client.data
     const errors = this.validateInput()
     return (
-      <div className="circulator-program">
-        {this.renderCurrentTemp()}
-        <Card className="start-program">
-          <CardTitle title="Start a new cook" />
-          <CardText>
-            <TextField
-              type="number"
-              value={this.state.setPoint}
-              onChange={this.handleSetPoint}
-              floatingLabelText="Temperature(°C)"
-              hintText="Temperature(°C)"
-              errorText={errors.temperature}
-              fullWidth
-            />
-            <TextField
-              type="number"
-              value={this.state.cookTime}
-              onChange={this.handleCookTime}
-              floatingLabelText="Cook time(minutes)"
-              hintText="Cook time(minutes)"
-              errorText={errors.cookTime}
-              fullWidth
-            />
-            <br />
-            <RaisedButton
-              label="Start"
-              onClick={this.startProgram}
-              disabled={errors.invalid  || this.state.setPoint === ""}
-              fullWidth
-            />
-          </CardText>
-        </Card>
-      </div>
+      <Card className="start-program">
+        <CardTitle title="Start a new cook" subtitle={`Currently ${bathTemp.toFixed(1)}°C`} />
+        <CardText>
+          <TextField
+            type="number"
+            value={this.state.setPoint}
+            onChange={this.handleSetPoint}
+            floatingLabelText="Temperature(°C)"
+            hintText="Temperature(°C)"
+            errorText={errors.temperature}
+            fullWidth
+          />
+          <TextField
+            type="number"
+            value={this.state.cookTime}
+            onChange={this.handleCookTime}
+            floatingLabelText="Cook time(minutes)"
+            hintText="Cook time(minutes)"
+            errorText={errors.cookTime}
+            fullWidth
+          />
+          <br />
+          <RaisedButton
+            label="Start"
+            onClick={this.startProgram}
+            disabled={errors.invalid  || this.state.setPoint === ""}
+            fullWidth
+          />
+        </CardText>
+      </Card>
     )
   }
 
   public renderCooking() {
+    const client = this.props.circulatorManager.currentCirculatorClient
+    const { bathTemp, timeRemaining } = client.data
+    debugger
+        // <CardTitle title={`Current temperature: ${bathTemp.toFixed(1)} °C`} />
     return (
-      <div className="circulator-program">
-        {this.renderCurrentTemp()}
-        <Card>
-          <CardTitle title="Stop current cook" />
-          <RaisedButton
-            label="Stop"
-            onClick={this.stopProgram}
-            fullWidth
-          />
-        </Card>
-      </div>
+      <Card>
+        <CardTitle title="Current cook" subtitle={`Currently ${bathTemp.toFixed(1)}°C`} />
+        {timeRemaining && <CardText>Time remaining: {moment.duration(timeRemaining, "seconds").humanize()} </CardText>}
+        <br />
+        <RaisedButton
+          label="Stop"
+          onClick={this.stopProgram}
+          fullWidth
+        />
+      </Card>
     )
   }
 
   public render() {
     const client = this.props.circulatorManager.currentCirculatorClient
-    if (!client || !client.circulatorState) {
+    if (!client || !client.circulatorState || this.state.loading) {
       return this.renderLoading()
     } else if (client.circulatorState === CirculatorStates.idle) {
       return this.renderIdle()
