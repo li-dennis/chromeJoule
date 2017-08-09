@@ -150,7 +150,7 @@ class WebSocketConnection extends EventEmitter {
   }
 
   public getWebSocket() {
-    return new CSWebSocket(this.url + "?token=" + authenticationService.userToken, false)
+    return new CSWebSocket(this.url + "?token=" + authenticationService.userInfo.token, false)
   }
 
   public createHandler() {

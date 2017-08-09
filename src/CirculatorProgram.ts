@@ -39,7 +39,7 @@ class CirculatorProgram {
           program_type: this.programType,
           guide_id: this.guide,
           program_id: this.programMetadata && this.programMetadata.programId,
-          cook_id: this.programMetadata && this.programMetadata.cookId,
+          cook_id: Uuid.v4().split("-").join(""),
           timer_id: this.programMetadata && this.programMetadata.timerId,
       }
   }

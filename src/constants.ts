@@ -201,7 +201,7 @@ const appConfig = {
             vibrateOptions: {
                 times: 8,
                 distance: 760,
-                duration: 450
+                duration: 450,
             },
         },
     },
@@ -231,6 +231,11 @@ const webSocketReadyStates = {
     closed: 3,
 }
 
+const CirculatorStates = {
+  idle: "IDLE",
+  cooking: "COOKING"
+}
+
 export { routingConfig, csConfig, connectionProvidersConfig,
 disconnectReasons, connectionState, firmwareUpdateConfig, appConfig,
-circulatorConnectionStates, webSocketReadyStates }
+circulatorConnectionStates, webSocketReadyStates, CirculatorStates }

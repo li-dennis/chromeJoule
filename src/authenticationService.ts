@@ -1,22 +1,42 @@
+const { CSApiClient } = require("exports-loader?window!./bundle.js")
 import * as $ from "jquery"
-import { csConfig, routingConfig } from "./constants"
-import { email, password } from "./credentials"
+import { csConfig } from "./constants"
+import rootLogger from "./rootLogger"
 
 class AuthenticationService {
+  public userInfo: { email: string, id: number, name: string, slug: string, token: string }
+
   private headers: any = { "Content-Type": "application/x-www-form-urlencoded" }
-  public userToken: any
+  private authenticationApi = new CSApiClient.AuthenticationApi(csConfig.chefstepsEndpoint, rootLogger)
 
-  public async initiate() {
-    const url = `${csConfig.chefstepsEndpoint}/api/v0/authenticate?user[email]=${email}&user[password]=${password}`
+  public async checkSession() {
+    return $.get(this.authenticationApi.baseUrl + this.authenticationApi.endpoints.sessionMe, (response) => {
+      if (!response.token && response.logged_in === false) {
+        this.userInfo = null
+        return this.userInfo
+      }
 
-    return $.ajax({
-      url,
-      type: "POST",
-      headers: this.headers,
-    }).then((response) => {
-      this.userToken = response.token
-      return this.userToken
+      this.userInfo = response
+      return this.userInfo
     })
+  }
+
+  public async getUserInfo() {
+    if (this.userInfo) {
+      return this.userInfo
+    }
+
+    return this.checkSession()
+  }
+
+  // TODO. Has a different API response from endpoints.sessionMe.
+  public async login(email, password) {
+    await this.authenticationApi.loginWithEmail(email, password).then((response) => {
+      this.userInfo = response
+      return this.userInfo
+    })
+
+    return this.checkSession()
   }
 
   public getCallerAddress(userToken) {

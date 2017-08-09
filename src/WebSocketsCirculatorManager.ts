@@ -14,13 +14,13 @@ class WebSocketsCirculatorManager {
   private scanTimer = null
   private circulatorClient = null
   private circulatorConnectionState: any
-  private currentCirculatorClient: any
+  public currentCirculatorClient: any
   private cachedFindAllCirculators
 
   private cookHistoryApi: any
 
-  public async initiateCirculatorManager() {
-    this.userToken = await authenticationService.initiate()
+  public initiateCirculatorManager(userInfo) {
+    this.userToken = userInfo.token
 
     const applicationAddressHex = authenticationService.getCallerAddress(this.userToken)
     const connectionProviders = [new WebSocketConnectionProvider(applicationAddressHex)]
@@ -100,37 +100,14 @@ class WebSocketsCirculatorManager {
     })
   }
 
-  public async startProgram(circulatorProgramOpt?: CirculatorProgram) {
-    const sampleProgram = {
-        createdAt: (new Date()).getTime(),
-        program: {
-            id: "2l8bBpLZx6y6YK0si8Ias6",
-            setPoint: 60,
-            holdingTemperature: 60,
-            programType: "AUTOMATIC",
-            guide: "2nRaLt8kROgASYSOO8mkUw",
-            cookTime: 57600,
-            programMetadata: {
-                guideId: "2nRaLt8kROgASYSOO8mkUw",
-                programId: "2l8bBpLZx6y6YK0si8Ias6",
-                timerId: "3JboTgZjYAqmKomWa4Gwg0",
-                cookId: "477e88699d664b139ba4433898ee85ac",
-            },
-        },
-    }
-
-    const circulatorProgram = new CirculatorProgram(sampleProgram.program)
-
+  public async startProgram(program: {setPoint: number, cookTime?: number, programType?: string, programMetadata: any}) {
+    const circulatorProgram = new CirculatorProgram(program)
     this.currentCirculatorClient.startProgram(circulatorProgram)
-
     this.cookHistoryApi.create(circulatorProgram.asApiPersistable())
   }
 
-  public async run(){
-    await this.initiateCirculatorManager()
-    await this.circulatorScan()
-    await this.findLastAccessedCirculator()
-    await this.startProgram()
+  public async stopProgram() {
+    this.currentCirculatorClient.stopProgram()
   }
 }
 
