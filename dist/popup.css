@@ -1,3 +1,29 @@
 body {
   width: 400px;
+  font-size: 15px
+}
+
+.name {
+  margin-bottom: 20px;
+}
+
+.red {
+  color: red;
+}
+
+.current-temperature {
+  margin-bottom: 20px;
+}
+
+label {
+  width: 150px;
+}
+
+input {
+  width: 100px;
+}
+
+form label, form input {
+  display: inline-block;
+  margin-bottom 20px
 }

@@ -71,9 +71,23 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
       } else if (this.state.maxTemp && temp > this.state.maxTemp) {
         errors.push(`Temperature must be below ${this.state.maxTemp.toFixed(1)}°C`)
       }
+
+      if (this.state.cookTime && parseInt(this.state.cookTime) <= 0) {
+        errors.push("Cook time must be greater than 0 minutes")
+      }
     }
 
     return errors
+  }
+
+  public renderCurrentTemp() {
+    const client = this.props.circulatorManager.currentCirculatorClient
+    const bathTemp = client.data.bathTemp
+    return (
+      <div className="current-temperature">
+        Current temp: {bathTemp ? `${bathTemp.toFixed(1)} °C` : "Fetching..." }
+      </div>
+    )
   }
 
   public renderLoading() {
@@ -82,40 +96,32 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
 
   public renderIdle() {
     const client = this.props.circulatorManager.currentCirculatorClient
-    const bathTemp = client.data.bathTemp
     const errors = this.validateInput()
     return (
       <div className="circulator-program">
-        <div className="current-temperature">
-          Current temp: {bathTemp ? `${bathTemp.toFixed(1)} °C` : "Fetching..." }
-        </div>
+        {this.renderCurrentTemp()}
         <div className="errors">
           {errors.map((error) => <div>{error}</div>)}
         </div>
         <form>
           <div>
-            <label>Temp: </label>
+            <label>Temperature(°C): </label>
             <input type="number" value={this.state.setPoint} onChange={this.handleSetPoint} />
-            °C
           </div>
           <div>
-            <label>Cook time: </label>
+            <label>Cook time(minutes): </label>
             <input type="number" value={this.state.cookTime} onChange={this.handleCookTime} />
           </div>
-          <button onClick={this.startProgram} disabled={errors.length === 0}>Start</button>
+          <button onClick={this.startProgram} disabled={errors.length > 0 || this.state.setPoint === ""}>Start</button>
         </form>
       </div>
     )
   }
 
   public renderCooking() {
-    const client = this.props.circulatorManager.currentCirculatorClient
-    const bathTemp = client.data.bathTemp
     return (
       <div className="circulator-program">
-        <div className="current-temperature">
-          Current temp: {bathTemp ? `${bathTemp.toFixed(1)} °C` : "Fetching..." }
-        </div>
+        {this.renderCurrentTemp()}
         <button onClick={this.stopProgram}>Stop</button>
       </div>
     )
@@ -179,7 +185,7 @@ class Main extends React.Component {
     if (this.state.userInfo) {
       return (
         <div className="content">
-          <div className="name">Welcome {this.state.userInfo.name}</div>
+          <div className="name">Welcome, {this.state.userInfo.name}!</div>
           <CirculatorProgramView
             circulatorManager={this.state.circulatorManager}
             circulatorData={this.state.circulatorData}
