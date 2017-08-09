@@ -203,7 +203,7 @@ class Main extends React.Component {
     const userInfo = await authenticationService.getUserInfo()
 
     // Login error ocurred
-    if (!userInfo) {
+    if (!userInfo.token || userInfo.logged_in === false) {
       this.setState({ loading : false })
       return
     }
@@ -252,7 +252,16 @@ class Main extends React.Component {
         </div>
       )
     } else {
-      return <div className="content">Please make sure you are logged in at chefsteps.com and have cookies enabled</div>
+      return (
+        <div className="content">
+          <Card className="name">
+            <CardTitle title="Error" />
+            <CardText>
+              Please make sure you are logged in at chefsteps.com and have cookies enabled
+            </CardText>
+          </Card>
+        </div>
+      )
     }
   }
 }
