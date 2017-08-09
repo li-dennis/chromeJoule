@@ -1,5 +1,10 @@
 import * as React from "react"
 const { Uuid } = require("exports-loader?window!./bundle.js")
+import {Card, CardText, CardTitle} from "material-ui/Card"
+import RaisedButton from "material-ui/RaisedButton"
+import RefreshIndicator from "material-ui/RefreshIndicator"
+import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
+import TextField from "material-ui/TextField"
 import * as ReactDOM from "react-dom"
 import authenticationService from "./authenticationService"
 import { circulatorConnectionStates, CirculatorStates } from "./constants"
@@ -41,12 +46,12 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
     this.props.circulatorManager.stopProgram()
   }
 
-  public handleSetPoint = (event) => {
-    this.setState({setPoint: event.target.value})
+  public handleSetPoint = (event, setPoint) => {
+    this.setState({ setPoint })
   }
 
-  public handleCookTime = (event) => {
-    this.setState({cookTime: event.target.value})
+  public handleCookTime = (event, cookTime) => {
+    this.setState({ cookTime })
   }
 
   public componentWillMount() {
@@ -63,17 +68,24 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
 
   public validateInput() {
     // validate input
-    const errors = []
+    const errors = {
+      cookTime: "",
+      temperature: "",
+      invalid: false,
+    }
     if (this.state.setPoint) {
       const temp = parseInt(this.state.setPoint)
       if (temp < CirculatorProgramView.minTemp) {
-        errors.push(`Temperature must be above ${CirculatorProgramView.minTemp}°C`)
+        errors.temperature = `Temperature must be above ${CirculatorProgramView.minTemp}°C`
+        errors.invalid = true
       } else if (this.state.maxTemp && temp > this.state.maxTemp) {
-        errors.push(`Temperature must be below ${this.state.maxTemp.toFixed(1)}°C`)
+        errors.temperature = (`Temperature must be below ${this.state.maxTemp.toFixed(1)}°C`)
+        errors.invalid = true
       }
 
       if (this.state.cookTime && parseInt(this.state.cookTime) <= 0) {
-        errors.push("Cook time must be greater than 0 minutes")
+        errors.cookTime = ("Cook time must be greater than 0 minutes")
+        errors.invalid = true
       }
     }
 
@@ -84,14 +96,25 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
     const client = this.props.circulatorManager.currentCirculatorClient
     const bathTemp = client.data.bathTemp
     return (
-      <div className="current-temperature">
-        Current temp: {bathTemp ? `${bathTemp.toFixed(1)} °C` : "Fetching..." }
-      </div>
+      <Card className="current-temperature">
+        <CardTitle title={`Current temperature: ${bathTemp.toFixed(1)} °C`} />
+      </Card>
     )
   }
 
   public renderLoading() {
-      return <div className="circulator-program">Getting last accessed joule...</div>
+    return (
+      <div className="circulator-program">
+        <Card className="loading-container">
+          <RefreshIndicator
+            size={50}
+            left={175}
+            top={20}
+            status="loading"
+          />
+        </Card>
+      </div>
+    )
   }
 
   public renderIdle() {
@@ -100,20 +123,36 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
     return (
       <div className="circulator-program">
         {this.renderCurrentTemp()}
-        <div className="errors">
-          {errors.map((error) => <div>{error}</div>)}
-        </div>
-        <form>
-          <div>
-            <label>Temperature(°C): </label>
-            <input type="number" value={this.state.setPoint} onChange={this.handleSetPoint} />
-          </div>
-          <div>
-            <label>Cook time(minutes): </label>
-            <input type="number" value={this.state.cookTime} onChange={this.handleCookTime} />
-          </div>
-          <button onClick={this.startProgram} disabled={errors.length > 0 || this.state.setPoint === ""}>Start</button>
-        </form>
+        <Card className="start-program">
+          <CardTitle title="Start a new cook" />
+          <CardText>
+            <TextField
+              type="number"
+              value={this.state.setPoint}
+              onChange={this.handleSetPoint}
+              floatingLabelText="Temperature(°C)"
+              hintText="Temperature(°C)"
+              errorText={errors.temperature}
+              fullWidth
+            />
+            <TextField
+              type="number"
+              value={this.state.cookTime}
+              onChange={this.handleCookTime}
+              floatingLabelText="Cook time(minutes)"
+              hintText="Cook time(minutes)"
+              errorText={errors.cookTime}
+              fullWidth
+            />
+            <br />
+            <RaisedButton
+              label="Start"
+              onClick={this.startProgram}
+              disabled={errors.invalid  || this.state.setPoint === ""}
+              fullWidth
+            />
+          </CardText>
+        </Card>
       </div>
     )
   }
@@ -122,7 +161,14 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
     return (
       <div className="circulator-program">
         {this.renderCurrentTemp()}
-        <button onClick={this.stopProgram}>Stop</button>
+        <Card>
+          <CardTitle title="Stop current cook" />
+          <RaisedButton
+            label="Stop"
+            onClick={this.stopProgram}
+            fullWidth
+          />
+        </Card>
       </div>
     )
   }
@@ -141,7 +187,7 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
 
 class Main extends React.Component {
   public state = {
-    email: "",
+    email:    "",
     password: "",
     userInfo: null,
     loading: true,
@@ -173,7 +219,7 @@ class Main extends React.Component {
 
     this.setState({
       userInfo,
-      loading: false,
+         loading: false,
     })
   }
 
@@ -182,10 +228,12 @@ class Main extends React.Component {
   }
 
   public render() {
-    if (this.state.userInfo) {
+    if   (this.state.userInfo) {
       return (
         <div className="content">
-          <div className="name">Welcome, {this.state.userInfo.name}!</div>
+          <Card className="name">
+            <CardTitle title={`Hi, ${this.state.userInfo.name}!`} />
+          </Card>
           <CirculatorProgramView
             circulatorManager={this.state.circulatorManager}
             circulatorData={this.state.circulatorData}
@@ -193,11 +241,20 @@ class Main extends React.Component {
         </div>
       )
     } else if (this.state.loading) {
-      return <div>Loading...</div>
+      return (
+        <div className="content">
+          <RefreshIndicator
+            size={50}
+            left={175}
+            top={20}
+            status="loading"
+          />
+        </div>
+      )
     } else {
-      return <div>Please make sure you are logged in at chefsteps.com and have cookies enabled</div>
+      return <div className="content">Please make sure you are logged in at chefsteps.com and have cookies enabled</div>
     }
   }
 }
 
-ReactDOM.render(<Main />, document.getElementById("content"))
+ReactDOM.render(<MuiThemeProvider><Main /></MuiThemeProvider>, document.getElementById("content"))
