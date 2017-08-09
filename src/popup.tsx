@@ -5,7 +5,6 @@ import RaisedButton from "material-ui/RaisedButton"
 import RefreshIndicator from "material-ui/RefreshIndicator"
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
 import TextField from "material-ui/TextField"
-import * as moment from "moment"
 import * as ReactDOM from "react-dom"
 import authenticationService from "./authenticationService"
 import { circulatorConnectionStates, CirculatorStates } from "./constants"
@@ -124,7 +123,7 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
             value={this.state.setPoint}
             onChange={this.handleSetPoint}
             floatingLabelText="Temperature(°C)"
-            hintText="Temperature(°C)"
+            hintText="Temperature (°C)"
             errorText={errors.temperature}
             fullWidth
           />
@@ -133,7 +132,7 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
             value={this.state.cookTime}
             onChange={this.handleCookTime}
             floatingLabelText="Cook time(minutes)"
-            hintText="Cook time(minutes)"
+            hintText="Cook time (minutes)"
             errorText={errors.cookTime}
             fullWidth
           />
@@ -157,7 +156,7 @@ class CirculatorProgramView extends React.Component<ICirculatorProgramViewProps,
     return (
       <Card>
         <CardTitle title="Current cook" subtitle={`Currently ${bathTemp.toFixed(1)}°C`} />
-        {timeRemaining && <CardText>Time remaining: {moment.duration(timeRemaining, "seconds").humanize()} </CardText>}
+        {timeRemaining && <CardText>Time remaining: {(timeRemaining / 60).toFixed(0)} minutes</CardText>}
         <br />
         <RaisedButton
           label="Stop"
