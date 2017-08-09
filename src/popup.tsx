@@ -5,33 +5,6 @@ import authenticationService from "./authenticationService"
 import { CirculatorStates } from "./constants"
 import WebSocketsCirculatorManager from "./WebSocketsCirculatorManager"
 
-// interface ILoginFormProps {
-//   handleLogin: Function
-//   showError?: boolean
-// }
-
-// class LoginForm extends React.Component<ILoginFormProps, any> {
-//   public state = {
-//     email: "",
-//     password: "",
-//   }
-
-//   public handleEmailChange = (event) => this.setState({email: event.target.value})
-//   public handlePasswordChange = (event) => this.setState({password: event.target.value})
-
-//   public render() {
-//     return (
-//       <div className="login-form">
-//         <form onSubmit={() => this.props.handleLogin(this.state.email, this.state.password)}>
-//           <label>Email: <input type="email" value={this.state.email} onChange={this.handleEmailChange} /></label>
-//           <label>Password: <input type="password" value={this.state.password} onChange={this.handlePasswordChange} /></label>
-//           <input type="submit" value="Submit" />
-//         </form>
-//       </div>
-//     )
-//   }
-// }
-
 interface ICirculatorProgramViewProps {
   circulatorManager: WebSocketsCirculatorManager,
   circulatorData: any

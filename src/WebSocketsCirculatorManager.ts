@@ -88,11 +88,8 @@ class WebSocketsCirculatorManager {
     return this.findAllCirculators(true).then((n) => {
       const lastAccessedCirculator = this.sdkCirculatorManager.findLastAccessedCirculator(n)
       if (lastAccessedCirculator) {
-        lastAccessedCirculator.dataObserver.start().progress(() => {
-          // debugger
-        })
+        lastAccessedCirculator.dataObserver.start()
         this.updateCurrentCirculatorClient(lastAccessedCirculator)
-        // cacheService.set("usageHistory", "hasEverPaired", !0))
       } else {
         const jouleFound = this.circulatorConnectionState === circulatorConnectionStates.jouleFound
         this.setCirculatorConnectionState(jouleFound ? jouleFound : circulatorConnectionStates.unpaired)
