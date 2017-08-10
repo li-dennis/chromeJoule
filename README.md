@@ -1,4 +1,4 @@
-# Chrome Joule - (Unoffiical) Chrome extension to control your Chefsteps Joule
+# Chrome Joule - An unofficial chrome extension to control your Chefsteps Joule
 [![Chrome Joule ](https://i.imgur.com/ru521YW.png)](https://www.youtube.com/watch?v=goPv_ClIndM "Chrome Joule Video")
 ## Overview
 Click the image above for a youtube video of the extension in action. Pretty straightforward :)
@@ -9,8 +9,9 @@ Currently, the extension supports the following:
 * Input validation (e.g. making sure the temperature is in bounds)
 * Live updates (current temperature, preheating, and error messages e.g. bad connection or login issues)
 
-## Download 
-It's not on the chrome app store yet, so for now, you can follow the [build/install procedure](#build-and-install)
+## Installation 
+You can download it from the chrome app store
+[here](https://chrome.google.com/webstore/detail/chrome-joule/lifggfcoblmpbobfobpfhhjkiempjckn).
 
 ## Development
 If you’re interested in a blog post I wrote about the development process, see <>
