@@ -1,7 +1,10 @@
-# Chrome Joule - An unofficial chrome extension to control your Chefsteps Joule
+# Chrome Joule - An unofficial chrome extension to control your ChefSteps Joule
 [![Chrome Joule ](https://i.imgur.com/ru521YW.png)](https://www.youtube.com/watch?v=goPv_ClIndM "Chrome Joule Video")
 ## Overview
 Click the image above for a youtube video of the extension in action. Pretty straightforward :)
+
+(If you want to humor me and read about the making of this, see
+[this](https://medium.com/@_dennisli/reverse-engineering-the-chefsteps-joule-and-making-a-chrome-extension-fa09c78bd87f))
 
 Currently, the extension supports the following:
 * Starting manual cook programs (Both the temperature and optionally, the duration)
