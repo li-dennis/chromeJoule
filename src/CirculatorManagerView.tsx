@@ -29,19 +29,24 @@ class CirculatorManagerView extends React.Component {
       return
     }
 
-    this.state.circulatorManager.initiateCirculatorManager(userInfo)
-    await this.state.circulatorManager.circulatorScan()
-    await this.state.circulatorManager.findLastAccessedCirculator()
-
-    this.state.circulatorManager.currentCirculatorClient.dataObserver.start().progress((data) => {
-      // HACK to also triggers an update in client.data
-      this.setState({ circulatorData: data })
-    })
-
-    this.setState({
-      userInfo,
-      authorizing: false,
-    })
+    try {
+      this.state.circulatorManager.initiateCirculatorManager(userInfo)
+      await this.state.circulatorManager.circulatorScan()
+      await this.state.circulatorManager.findLastAccessedCirculator()
+      this.state.circulatorManager.currentCirculatorClient.dataObserver.start().progress((data) => {
+          // HACK to also triggers an update in client.data
+          this.setState({ circulatorData: data })
+      })
+      this.setState({
+          userInfo,
+          authorizing: false,
+      })
+    }  catch (error) {
+      console.error("Unknown error ocurred", error)
+      this.setState({
+        authorizing: false,
+      })
+    }
   }
 
   public componentWillMount() {
@@ -103,7 +108,8 @@ class CirculatorManagerView extends React.Component {
             <CardTitle title="Error" />
             <CardText>
               Please make sure you are logged in
-              on <a href="http://www.chefsteps.com" target="_blank">chefsteps.com</a> and have cookies enabled
+              on at <a href="http://www.chefsteps.com" target="_blank">chefsteps.com</a> and
+              have cookies enabled. You can also try logging out and back in.
             </CardText>
           </Card>
         </div>
