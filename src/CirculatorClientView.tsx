@@ -1,5 +1,6 @@
-import {Card, CardText, CardTitle} from "material-ui/Card"
+import {Card, CardActions, CardText, CardTitle} from "material-ui/Card"
 const { Uuid } = require("exports-loader?window!./bundle.js")
+import FlatButton from "material-ui/FlatButton"
 import RaisedButton from "material-ui/RaisedButton"
 import RefreshIndicator from "material-ui/RefreshIndicator"
 import TextField from "material-ui/TextField"
@@ -13,7 +14,7 @@ interface IActiveCirculatorClientViewProps {
 }
 
 class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClientViewProps, any> {
-  static minTemp = 20
+  private static minTemp = 20
 
   public state = {
     setPoint: "",
@@ -22,12 +23,16 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
     programMetadata: { cookId: Uuid.v4().split("-").join("") },
     maxTemp: undefined,
     lock: false, // Lock while starting/stopping a cook program
+    isCelsius: true, // false indicates fahrenheit
   }
 
   public startProgram = () => {
+    const setPoint = this.state.isCelsius ? parseInt(this.state.setPoint, 10) :
+      this.convertToCelsius(parseInt(this.state.setPoint, 10))
+
     this.props.circulatorManager.startProgram({
-      setPoint: parseInt(this.state.setPoint),
-      cookTime: this.state.cookTime !== "" ? parseInt(this.state.cookTime) * 60  : undefined,
+      setPoint,
+      cookTime: this.state.cookTime !== "" ? parseInt(this.state.cookTime, 10) * 60  : undefined,
       programType: this.state.programType,
       programMetadata: this.state.programMetadata,
     }).then(() => this.setState({ lock: false}))
@@ -46,12 +51,16 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
     this.setState({ lock: true })
   }
 
-  public handleSetPoint = (event, setPoint) => {
-    this.setState({ setPoint })
+  public handleSetPoint = (event, temp) => {
+    this.setState({ setPoint: parseInt(temp) })
   }
 
   public handleCookTime = (event, cookTime) => {
     this.setState({ cookTime })
+  }
+
+  public toggleIsCelsius = (value: boolean) => {
+    this.setState({ isCelsius: value })
   }
 
   public componentWillMount() {
@@ -73,12 +82,14 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
       invalid: false,
     }
     if (this.state.setPoint) {
-      const temp = parseInt(this.state.setPoint)
+      const temp = this.state.isCelsius ? parseInt(this.state.setPoint, 10) :
+        this.convertToCelsius(parseInt(this.state.setPoint, 10))
+
       if (temp < ActiveCirculatorProgramView.minTemp) {
-        errors.temperature = `Temperature must be above ${ActiveCirculatorProgramView.minTemp}°C`
+        errors.temperature = `Temperature must be above ${this.getDisplayTemp(ActiveCirculatorProgramView.minTemp)}`
         errors.invalid = true
       } else if (this.state.maxTemp && temp > this.state.maxTemp) {
-        errors.temperature = (`Temperature must be below ${this.state.maxTemp.toFixed(1)}°C`)
+        errors.temperature = (`Temperature must be below ${this.getDisplayTemp(this.state.maxTemp)}`)
         errors.invalid = true
       }
 
@@ -89,6 +100,15 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
     }
 
     return errors
+  }
+
+  public renderTemperatureToggle() {
+    return (
+      <CardActions>
+        <FlatButton label="Celsiuis" onClick={() => this.toggleIsCelsius(true)} primary={this.state.isCelsius} />
+        <FlatButton label="Fahrenheit" onClick={() => this.toggleIsCelsius(false)} primary={!this.state.isCelsius} />
+      </CardActions>
+    )
   }
 
   public renderLoading() {
@@ -125,16 +145,18 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
     const client = this.props.circulatorManager.currentCirculatorClient
     const { bathTemp } = client.data
     const errors = this.validateInput()
+    const tempLabel = `Temperature (°${this.state.isCelsius ? "C" : "F"})`
     return (
       <Card className="start-program">
-        <CardTitle title="Start a new cook" subtitle={`Currently ${bathTemp.toFixed(1)}°C`} />
+        <CardTitle title="Start a new cook" subtitle={`Currently ${this.getDisplayTemp(bathTemp)}`} />
+        {this.renderTemperatureToggle()}
         <CardText>
           <TextField
             type="number"
             value={this.state.setPoint}
             onChange={this.handleSetPoint}
-            floatingLabelText="Temperature(°C)"
-            hintText="Temperature (°C)"
+            floatingLabelText={tempLabel}
+            hintText={tempLabel}
             errorText={errors.temperature}
             fullWidth
           />
@@ -142,20 +164,20 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
             type="number"
             value={this.state.cookTime}
             onChange={this.handleCookTime}
-            floatingLabelText="Cook time(minutes)"
+            floatingLabelText="Cook time (minutes)"
             hintText="Cook time (minutes)"
             errorText={errors.cookTime}
             fullWidth
           />
-          <br />
-          <RaisedButton
-            label="Start"
-            onClick={this.startProgram}
-            disabled={errors.invalid  || this.state.setPoint === ""}
-            fullWidth
-          />
         </CardText>
-      </Card>
+        <br />
+        <RaisedButton
+          label="Start"
+          onClick={this.startProgram}
+          disabled={errors.invalid  || this.state.setPoint === ""}
+          fullWidth
+        />
+     </Card>
     )
   }
 
@@ -163,13 +185,13 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
     const client = this.props.circulatorManager.currentCirculatorClient
     const { bathTemp, timeRemaining, programStep } = client.data
     // TODO: Support adding/removing food
-    const subtitle = `Currently: ${bathTemp.toFixed(1)}°C`
+    const subtitle = `Currently: ${this.getDisplayTemp(bathTemp)}`
     const statusMessages = []
     let title
     switch (programStep) {
       case programSteps.preheat:
         title = "Preheating..."
-        statusMessages.push(`Target temperature: ${client.program.setPoint}°C.`)
+        statusMessages.push(`Target temperature: ${this.getDisplayTemp(client.program.setPoint)}.`)
         break
       case programSteps.waitForFood:
       case programSteps.cook:
@@ -190,6 +212,7 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
     return (
       <Card>
         <CardTitle title={title} subtitle={subtitle} />
+        {this.renderTemperatureToggle()}
         {statusMessages.map((status) => <CardText>{status}</CardText>)}
         <br />
         <RaisedButton
@@ -223,6 +246,20 @@ class ActiveCirculatorProgramView extends React.Component<IActiveCirculatorClien
     // return this.renderError()
     return this.renderLoading()
   }
+
+  private convertToCelsius(fahrenheitTemp: number) {
+    return (fahrenheitTemp - 32) / 1.8
+  }
+
+  private convertToFahrenheit(celsiusTemp: number) {
+    return (celsiusTemp * 1.8 + 32)
+  }
+
+  private getDisplayTemp(celsiusTemp: number) {
+    const convertedTemp = this.state.isCelsius ? celsiusTemp : this.convertToFahrenheit(celsiusTemp)
+    return `${convertedTemp.toFixed(1)}°${this.state.isCelsius ? "C" : "F"}`
+  }
+
 }
 
 export default ActiveCirculatorProgramView
